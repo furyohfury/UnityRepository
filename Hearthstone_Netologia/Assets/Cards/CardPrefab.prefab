@@ -1347,7 +1347,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6bdf296ea36e10f44ab1d1759faba1ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _image: {fileID: 1307249472203900898}
+  _image: {fileID: 1307249472203900899}
   _cost: {fileID: 1307249473836208755}
   _name: {fileID: 1307249472768872969}
   _attack: {fileID: 1307249473160749871}

@@ -5,12 +5,12 @@ using UnityEngine.EventSystems;
 using TMPro;
 
 namespace Cards {
-    public class Card : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+    public class Card : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler
     {
         protected static GameObject _draggingCard;
         private Camera _camera;
         [SerializeField]
-        private GameObject _image;
+        private MeshRenderer _image;
         [SerializeField]
         private TextMeshPro _cost;
         [SerializeField]
@@ -23,6 +23,11 @@ namespace Cards {
         private TextMeshPro _type;
         [SerializeField]
         private TextMeshPro _description;
+        private CardPropertyData _cardData;
+        private void Awake()
+        {
+            _camera = Camera.main;
+        }
         public void OnBeginDrag(PointerEventData eventData)
         {
             _draggingCard = gameObject;
@@ -45,18 +50,40 @@ namespace Cards {
             }
             _draggingCard = null;
         }
-        private void Awake()
+        public void OnPointerEnter(PointerEventData eventData)
         {
-            _camera = Camera.main;
-        }
-        void Start()
-        {
-
+            gameObject.transform.localScale *= 1.2f;
+            // gameObject.transform.position += Vector3.up * 2;
         }
 
-        void Update()
+        public void OnPointerExit(PointerEventData eventData)
         {
-
+            gameObject.transform.localScale /= 1.2f;
+            // gameObject.transform.position -= Vector3.up * 2;
         }
+        public void SetCardDataAndVisuals(Texture image, int cost, string name, int attack, int health, CardUnitType type, string description)
+        {
+            _image.material.mainTexture = image;
+            _image.material.mainTextureScale = new Vector2(1, 1);
+            _cardData._image = image;
+            _cost.text = "" + cost;
+            _cardData._cost = cost;
+            _name.text = name;
+            _cardData._name = name;
+            _attack.text = "" + attack;
+            _cardData._attack = attack;
+            _health.text = "" + health;
+            _cardData._health = health;
+            _type.text = "" + type;
+            _cardData._type = type;
+            _description.text = description;
+            _cardData._description = description;
+        }
+        /* public void SetCardData(int cost, Texture image, string name, string description, int attack, int health, CardUnitType type)
+        {
+            _cardData._cost = 
+        } */
+        
+
     }
 }

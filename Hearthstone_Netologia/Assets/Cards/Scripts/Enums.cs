@@ -16,7 +16,9 @@ namespace Cards
 	public enum SideType : byte
 	{
 		Common = 0,
-		Mage = 1,
-		Warrior = 2
+		Mage = 11,
+		Warrior = 12,
+		Priest = 13,
+		Hunter = 14
 	}
 }
