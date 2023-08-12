@@ -1,23 +1,28 @@
 ﻿using System;
 using UnityEngine;
 
-namespace OneLine {
+namespace OneLine
+{
     ///<summary>
     ///Draws horizontal or vertical separator
     ///</summary>
     [AttributeUsage(validOn: AttributeTargets.Field, AllowMultiple = true, Inherited = false)]
-    public class SeparatorAttribute : PropertyAttribute {
+    public class SeparatorAttribute : PropertyAttribute
+    {
 
-        public SeparatorAttribute() {
+        public SeparatorAttribute()
+        {
             Text = "";
             Thickness = 2;
         }
 
-        public SeparatorAttribute(string text) : this() {
+        public SeparatorAttribute(string text) : this()
+        {
             Text = text;
         }
 
-        public SeparatorAttribute(string text, int thickness) : this(text){
+        public SeparatorAttribute(string text, int thickness) : this(text)
+        {
             Thickness = thickness;
         }
 

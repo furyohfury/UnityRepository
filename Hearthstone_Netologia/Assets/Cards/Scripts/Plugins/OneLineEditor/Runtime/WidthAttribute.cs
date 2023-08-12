@@ -1,6 +1,7 @@
 using System;
 
-namespace OneLine {
+namespace OneLine
+{
     ///<summary>
     ///Defines additive fixed width (in GUI units) on marked field in the line.
     ///By default sets weight of field to 0.
@@ -9,10 +10,12 @@ namespace OneLine {
     ///Applied to nested arrays defines width of each element.
     ///</summary>
     [AttributeUsageAttribute(validOn: AttributeTargets.Field, AllowMultiple = true, Inherited = false)]
-    public class WidthAttribute : WeightAttribute {
+    public class WidthAttribute : WeightAttribute
+    {
         private float width;
 
-        public WidthAttribute(float width) : base(0) {
+        public WidthAttribute(float width) : base(0)
+        {
             this.width = width;
         }
 

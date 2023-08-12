@@ -4,21 +4,26 @@ using UnityEngine;
 
 namespace Cards
 {
-	public enum CardUnitType : byte
-	{
-		None = 0,
-		Murloc = 1,
-		Beast = 2,
-		Elemental = 3,
-		Mech = 4
-	}
+    public enum CardUnitType : byte
+    {
+        None = 0,
+        Murloc = 1,
+        Beast = 2,
+        Elemental = 3,
+        Mech = 4
+    }
 
-	public enum SideType : byte
-	{
-		Common = 0,
-		Mage = 11,
-		Warrior = 12,
-		Priest = 13,
-		Hunter = 14
-	}
+    public enum SideType : byte
+    {
+        Common = 0,
+        Mage = 11,
+        Warrior = 12,
+        Priest = 13,
+        Hunter = 14
+    }
+    public enum PlayerSide : byte
+    {
+        One,
+        Two
+    }
 }

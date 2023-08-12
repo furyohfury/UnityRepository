@@ -1,7 +1,8 @@
 ﻿using System;
 using UnityEngine;
 
-namespace OneLine {
+namespace OneLine
+{
     ///<summary>
     ///Draws field into one line in InspectorWindow with  all nested fields (even arrays)
     ///which usual is presented in InspectorWindow in bulky weird view.
@@ -13,18 +14,22 @@ namespace OneLine {
     ///Fields, contains other fields are called COMPLEX FIELDS.
     ///</summary>
     [AttributeUsage(validOn: AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
-    public class OneLineAttribute : PropertyAttribute {
+    public class OneLineAttribute : PropertyAttribute
+    {
         public LineHeader Header { get; set; }
     }
 
     [AttributeUsage(validOn: AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
-    public class OneLineWithHeaderAttribute : OneLineAttribute {
-        public OneLineWithHeaderAttribute() : base(){
+    public class OneLineWithHeaderAttribute : OneLineAttribute
+    {
+        public OneLineWithHeaderAttribute() : base()
+        {
             Header = LineHeader.Short;
         }
     }
 
-    public enum LineHeader {
+    public enum LineHeader
+    {
         None = 0,
         Short = 1
     }

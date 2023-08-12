@@ -16,36 +16,42 @@ MonoBehaviour:
   _cost: 5
   _cards:
   - Id: 501
+    Cost: 5
     Name: Booty Bay Bodyguard
     Texture: {fileID: 2800000, guid: ed587b30c2c0b4d4dae19b14b562ebe4, type: 3}
     Attack: 5
     Health: 4
     Type: 0
   - Id: 502
+    Cost: 5
     Name: Darkscale Healer
     Texture: {fileID: 2800000, guid: ba0c888e544dbc54bb92ed1ae096bdfc, type: 3}
     Attack: 4
     Health: 5
     Type: 0
   - Id: 503
+    Cost: 5
     Name: Frostwolf Warlord
     Texture: {fileID: 2800000, guid: 9f4593a48e103e348a365104c4fe0266, type: 3}
     Attack: 4
     Health: 4
     Type: 0
   - Id: 504
+    Cost: 5
     Name: Gurubashi Berserer
     Texture: {fileID: 2800000, guid: 9e38a10689e5b004abbfe139dde974a3, type: 3}
     Attack: 2
     Health: 7
     Type: 0
   - Id: 505
+    Cost: 5
     Name: Nightblade
     Texture: {fileID: 2800000, guid: c39f529da285b1d4ea6c011bdb66301b, type: 3}
     Attack: 4
     Health: 4
     Type: 0
   - Id: 506
+    Cost: 5
     Name: Stormpike Commando
     Texture: {fileID: 2800000, guid: 91c8badf91051554ca58dc893b722e9c, type: 3}
     Attack: 4

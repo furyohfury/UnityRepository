@@ -4,9 +4,10 @@ using UnityEngine;
 
 namespace Cards
 {
-    public class BoardPosition : MonoBehaviour
+    public class Player : MonoBehaviour
     {
-        public PlayerSide _player;
+        [SerializeField]
+        public SideType _hero;
         // Start is called before the first frame update
         void Start()
         {

@@ -23,6 +23,17 @@ namespace Cards
         public int _health;
         [SerializeField]
         public CardUnitType _type;
+        public static CardPropertiesData Convert(CardPropertyData data)
+        {
+            CardPropertiesData propData = new();
+            propData.Cost = (ushort) data._cost;
+            propData.Texture = data._image;
+            propData.Name = data._name;
+            propData.Attack = (ushort)data._attack;
+            propData.Health = (ushort)data._health;
+            propData.Type = data._type;
+            return propData;
+        }
     }
 
     [Serializable]
@@ -30,7 +41,7 @@ namespace Cards
     {
         [Width(30)]
         public uint Id;
-        [NonSerialized]
+        [Width(20)]
         public ushort Cost;
         public string Name;
         [Width(50)]
@@ -62,5 +73,10 @@ namespace Cards
     public struct ClassCardsPaths
     {
 
+    }
+    public struct CardsData
+    {
+        public CardPropertiesData _commonCardPacks;
+        public CardPropertiesData _classCardPacks;
     }
 }

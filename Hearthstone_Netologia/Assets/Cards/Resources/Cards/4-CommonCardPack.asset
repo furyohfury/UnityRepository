@@ -16,42 +16,49 @@ MonoBehaviour:
   _cost: 4
   _cards:
   - Id: 401
+    Cost: 4
     Name: Chillwind Yeti
     Texture: {fileID: 2800000, guid: f033185b83bd9a040a9d30a94f03ec2c, type: 3}
     Attack: 4
     Health: 5
     Type: 0
   - Id: 402
+    Cost: 4
     Name: Dragonling Mechanic
     Texture: {fileID: 2800000, guid: 815334f1e8468564c9ccf7e0d54dba81, type: 3}
     Attack: 2
     Health: 4
     Type: 0
   - Id: 403
+    Cost: 4
     Name: Gnomish Inventor
     Texture: {fileID: 2800000, guid: 9ee6a53b5e7075743bd6cdb7d8b9729a, type: 3}
     Attack: 2
     Health: 4
     Type: 0
   - Id: 404
+    Cost: 4
     Name: Oasis Snapjaw
     Texture: {fileID: 2800000, guid: 3425e9de4230b9a4098559590f0ea885, type: 3}
     Attack: 2
     Health: 7
     Type: 2
   - Id: 405
+    Cost: 4
     Name: Ogre Magi
     Texture: {fileID: 2800000, guid: 291bbce33b6221f4c9e1fdaaaba5d7d5, type: 3}
     Attack: 4
     Health: 4
     Type: 0
   - Id: 406
+    Cost: 4
     Name: Sen'jin Shieldmasta
     Texture: {fileID: 2800000, guid: 99874dc23e0d56d45866ae3850e8cb71, type: 3}
     Attack: 3
     Health: 5
     Type: 0
   - Id: 407
+    Cost: 4
     Name: Stormwind Knight
     Texture: {fileID: 2800000, guid: 91db97110b0891e49ad2d48d011772d7, type: 3}
     Attack: 2

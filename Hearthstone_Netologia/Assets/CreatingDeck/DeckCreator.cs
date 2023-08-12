@@ -5,11 +5,14 @@ using System.Xml.Linq;
 using System;
 using UnityEditor;
 using Cards.ScriptableObjects;
+using System.Linq;
+using TMPro;
 
 namespace Cards
 {
     public class DeckCreator : MonoBehaviour
     {
+        public static DeckCreator DeckCreatorSingleton;
         [SerializeField]
         private CardPackConfiguration[] _commonPacks;
         [SerializeField]
@@ -21,17 +24,44 @@ namespace Cards
         private GameObject _commonStartPosition;
         [SerializeField]
         private GameObject _classStartPosition;
-        private Dictionary<SideType, CardPackConfiguration> _classPacks = new();
+        [SerializeField]
+        private CardPackConfiguration[] _classPacks;
+        private List<HeroPortrait> _heroPortraits = new();
+        [SerializeField]
+        private Camera _camera;
+        private Vector3 _cameraPositionOnChoosingCards = new Vector3(0, 270, 0);
+        [SerializeField]
+        private PlayerDeck _playerDeck;
+        [SerializeField]
+        private TextMeshPro _deckSizeText;
+        [SerializeField]
+        private TextMeshPro _chooseHeroForPlayerText;
         private void Awake()
         {
-            _defaultCommonPosition.x = _commonStartPosition.transform.position.x;
-            _defaultCommonPosition.y = _commonStartPosition.transform.position.y;
-
+            if (DeckCreatorSingleton != null) Destroy(this);
+            else DeckCreatorSingleton = this;
+            _heroPortraits.AddRange(FindObjectsOfType<HeroPortrait>());
+        }
+        private void OnEnable()
+        {
+            foreach (var hero in _heroPortraits)
+            {
+                hero.OnHeroChosen += ChoseHero;
+            }
+        }
+        private void OnDisable()
+        {
+            foreach (var hero in _heroPortraits)
+            {
+                hero.OnHeroChosen -= ChoseHero;
+            }
         }
 
         private void Start()
         {
-            CommonCardsConfiguration();
+            _defaultCommonPosition.x = _commonStartPosition.transform.position.x;
+            _defaultCommonPosition.y = _commonStartPosition.transform.position.y;
+            // CommonCardsConfiguration();
         }
         private void CommonCardsConfiguration()
         {
@@ -51,6 +81,28 @@ namespace Cards
                 _commonStartPosition.transform.position = new Vector3(_defaultCommonPosition.x, _defaultCommonPosition.y, _commonStartPosition.transform.position.z - 180f * _scale);
             }
         }
-
+        private void ClassCardsConfiguration(SideType hero)
+        {
+            CardPackConfiguration heroPack = _classPacks.FirstOrDefault((pack) => pack._sideType == hero);
+            if (heroPack == null) return;
+            foreach (var card in heroPack._cards)
+            {
+                if (ClassCardUtility.CheckUncollectible(card.Id)) continue;
+                var cardGO = Instantiate(_cardPrefab, _classStartPosition.transform.position, Quaternion.identity);
+                cardGO.transform.localScale *= _scale;
+                cardGO.transform.rotation *= Quaternion.Euler(new Vector3(0, 0, 180));
+                cardGO.name = card.Name;
+                Card cardComponent = cardGO.GetComponent<Card>();
+                cardComponent.SetCardDataAndVisuals(card.Texture, card.Cost, card.Name, card.Attack, card.Health, card.Type, ClassCardUtility.GetDescriptionById(card.Id));
+                _classStartPosition.transform.position += _scale * 110f * Vector3.right;
+            }
+        }
+        private void ChoseHero(SideType hero)
+        {
+            // Перемещение камеры на составление колоды
+            _camera.transform.position = _cameraPositionOnChoosingCards;
+            CommonCardsConfiguration();
+            ClassCardsConfiguration(hero);
+        }
     }
 }

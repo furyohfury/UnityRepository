@@ -4,9 +4,8 @@ using UnityEngine;
 
 namespace Cards
 {
-    public class BoardPosition : MonoBehaviour
+    public class PlayerDeck : MonoBehaviour
     {
-        public PlayerSide _player;
         // Start is called before the first frame update
         void Start()
         {

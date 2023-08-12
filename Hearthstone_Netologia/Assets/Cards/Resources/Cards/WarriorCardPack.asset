@@ -16,12 +16,14 @@ MonoBehaviour:
   _cost: 0
   _cards:
   - Id: 1201
+    Cost: 3
     Name: Warsong Commander
     Texture: {fileID: 2800000, guid: 0cea6b98784969846bc120b0f7775c52, type: 3}
     Attack: 2
     Health: 3
     Type: 0
   - Id: 1202
+    Cost: 4
     Name: Kor'kron Elite
     Texture: {fileID: 2800000, guid: 26d8daecf8ddc9d439b62af4ef364df4, type: 3}
     Attack: 4

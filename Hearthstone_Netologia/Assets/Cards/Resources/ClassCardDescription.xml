@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Descriptions>
+	<Pack Type="Mage">
+		<Unit Id="1101" Name="Water Elemental">
+			Freeze any character damaged by this minion
+		</Unit>
+	</Pack>
+	<Pack Type="Warrior">
+		<Unit Id="1201" Name="Warsong Commander">
+			Whenever you summon a minion with 3 or less Attack, give it #Charge/#
+		</Unit>
+		<Unit Id="1202" Name="Kor'kron Elite">
+			#Charge/#
+		</Unit>
+	</Pack>
+	<Pack Type="Priest">
+		<Unit Id="1301" Name="Northshire Cleric">
+			Whenever a minion is healed, draw a card
+		</Unit>
+	</Pack>
+	<Pack Type="Hunter">
+		<Unit Id="1401" Name="Timber Wolf">
+			Your other #Beasts/# have +1 Attack
+		</Unit>
+		<Unit Id="1402" Name="Starving Buzzard">
+			Whenever you summon a #Beast/#, draw a card
+		</Unit>
+		<Unit Id="1403" Name="Houndmaster">
+			Give a friendly #Beast/# +2/+2 and #Taunt/#
+		</Unit>
+		<Unit Id="1404" Name="Tundra Rhino">
+			Your #Beast/#s have #Charge/#
+		</Unit>
+	</Pack>
+</Descriptions>
