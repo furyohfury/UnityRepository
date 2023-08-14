@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static Cards.DecksManager;
+using static Cards.GameCycleManager;
 using System.Linq;
 
 namespace Cards
@@ -48,9 +49,10 @@ namespace Cards
                 GameObject mulliganPosition = Instantiate(_mulliganPositionPrefab, position, Quaternion.identity);
                 _mulliganPositions.Add(mulliganPosition.GetComponent<MulliganPosition>());
                 position += (3f / _mulliganSize) * 200 * Vector3.right;
+                mulliganPosition.name = "MulliganPosition" + i;
             }
         }
-        public void MulliganStart(PlayerSide player)
+        private void MulliganStart(PlayerSide player)
         {
             // ¬з€тие карт из колоды на муллиган
             ResetMulliganPositions();
@@ -62,7 +64,7 @@ namespace Cards
                 {
                     _mulliganCards.Add(card);
                     card.transform.position = DeckManagerSingleton.GetDeckPosition(player);
-                    card.GetComponent<Card>().Mulliganed(true);
+                    card.GetComponent<Card>().BeingMulliganed(true);
                 }
                 else Destroy(card);
             } while (_mulliganCards.Count < _mulliganSize);
@@ -150,6 +152,7 @@ namespace Cards
             // ѕеренос кард в руку
             foreach (var mullPos in _mulliganPositions)
             {
+                handPositions[i].SetLinkedCard(mullPos.LinkedCard);
                 float time = 0;
                 Vector3 startPos = mullPos.LinkedCard.transform.position;
                 Vector3 endPos = handPositions[i++].transform.position;
@@ -161,7 +164,7 @@ namespace Cards
                     yield return null;
                 }
                 mullPos.LinkedCard.transform.position = endPos;
-                mullPos.LinkedCard.GetComponent<Card>().Mulliganed(false);
+                mullPos.LinkedCard.GetComponent<Card>().BeingMulliganed(false);
             }            
             Input = true;
             if ((int)_currentPlayer + 1 < Enum.GetNames(typeof(PlayerSide)).Length)
@@ -172,7 +175,15 @@ namespace Cards
         }
         private void MulliganOver()
         {
+            // ”ничтожение всех элементов дл€ муллигана
+            Destroy(_mulliganEnd.gameObject);
+            foreach(var mullPos in _mulliganPositions)
+            {
+                Destroy(mullPos);
+            }
             Debug.Log("Mulligan is over");
+            // ¬ключение менеджера цикла игры
+            GameCycleSingleton.enabled = true;
         }
         private void ResetMulliganPositions()
         {

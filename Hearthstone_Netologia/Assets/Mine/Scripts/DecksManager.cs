@@ -76,8 +76,9 @@ namespace Cards
             // Создание нового GO карты и присваивание ей данных рандомной карты из колоды
             GameObject cardGO = Instantiate(_cardPrefab, deck.transform.position, Quaternion.identity);
             Card cardComp = cardGO.GetComponent<Card>();
-            cardComp.SetCardDataAndVisuals(deck.GetRandomCard(isMulliganing));
+            cardComp.SetCardDataAndVisuals(deck.GetRandomCard());
             cardGO.name = cardComp.GetCardPropertyData()._name;
+            cardGO.transform.position = deck.transform.position;
             return cardGO;
         }
         public void AddCardToDeck(PlayerSide player, Card card)

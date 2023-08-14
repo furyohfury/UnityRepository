@@ -25,27 +25,27 @@ namespace Cards
         [SerializeField]
         private TextMeshPro _description;
         private CardPropertyData _cardData;
-        public bool IsMulliganned { get; private set; }  = false;
+        public bool IsBeingMulliganned { get; private set; }  = false;
         private void Awake()
         {
             _camera = Camera.main;
         }
          public void OnBeginDrag(PointerEventData eventData)
         {
-            if (IsMulliganned) return;
+            if (IsBeingMulliganned) return;
             _draggingCard = gameObject;
         }
 
         public void OnDrag(PointerEventData eventData)
         {
-            if (_draggingCard == null || IsMulliganned) return;
+            if (_draggingCard == null || IsBeingMulliganned) return;
             Vector3 pos = new(_camera.ScreenToWorldPoint(Input.mousePosition).x, _draggingCard.transform.position.y, _camera.ScreenToWorldPoint(Input.mousePosition).z);
             _draggingCard.transform.position = pos;
         }
 
         public void OnEndDrag(PointerEventData eventData)
         {
-            if (IsMulliganned) return;
+            if (IsBeingMulliganned) return;
             // CarPosition - 6 слой
             LayerMask handposition = LayerMask.GetMask("Hand", "Board");
             if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, 20, handposition))
@@ -56,14 +56,14 @@ namespace Cards
         } 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            if (IsMulliganned) return;
+            if (IsBeingMulliganned) return;
             gameObject.transform.localScale *= 1.2f;
             // gameObject.transform.position += Vector3.up * 2;
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            if (IsMulliganned) return;
+            if (IsBeingMulliganned) return;
             gameObject.transform.localScale /= 1.2f;
             // gameObject.transform.position -= Vector3.up * 2;
         }
@@ -125,9 +125,9 @@ namespace Cards
             _description.text = data._description;
             _cardData._description = data._description;
         }
-        public void Mulliganed(bool mulliganed)
+        public void BeingMulliganed(bool mulliganed)
         {
-            IsMulliganned = mulliganed;
+            IsBeingMulliganned = mulliganed;
         }
     }
 }

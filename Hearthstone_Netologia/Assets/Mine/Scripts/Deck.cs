@@ -16,10 +16,9 @@ namespace Cards
         {
             DeckCards = deck.ToList();
         }
-        public CardPropertyData GetRandomCard(bool isMulliganing = false)
+        public CardPropertyData GetRandomCard()
         {
             CardPropertyData data = DeckCards[Random.Range(0, DeckCards.Count)];
-            // if (!isMulliganing)
             DeckCards.Remove(data);
             return data;
         }

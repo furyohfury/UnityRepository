@@ -7,7 +7,7 @@ public class EndTurnButton : MonoBehaviour, IPointerClickHandler
 {
     public void OnPointerClick(PointerEventData eventData)
     {
-        throw new System.NotImplementedException();
+        OnEndTurn?.Invoke();
     }
 
     // Start is called before the first frame update
@@ -21,4 +21,6 @@ public class EndTurnButton : MonoBehaviour, IPointerClickHandler
     {
 
     }
+    public delegate void EndTurn();
+    public event EndTurn OnEndTurn;
 }
