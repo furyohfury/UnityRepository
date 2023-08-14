@@ -154,7 +154,7 @@ namespace Cards
             if (!_descriptions.ContainsKey(id)) Debug.LogError($" XML-документ не содержит ключ {id}");
 #endif
             return _uncollectibleIds.Contains(id);
-        }        
+        }
     }
     public static class Converting
     {

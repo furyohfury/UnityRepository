@@ -36,8 +36,8 @@ namespace Cards
         }
         public void AddCard(GameObject card)
         {
-            if(card.TryGetComponent(out Card cardComp))
-            AddCard(cardComp);
+            if (card.TryGetComponent(out Card cardComp))
+                AddCard(cardComp);
         }
     }
 }

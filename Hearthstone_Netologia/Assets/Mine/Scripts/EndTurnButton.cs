@@ -2,12 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using static Cards.GameCycleManager;
 
 public class EndTurnButton : MonoBehaviour, IPointerClickHandler
 {
     public void OnPointerClick(PointerEventData eventData)
     {
-        OnEndTurn?.Invoke();
+        if (GameCycleSingleton.Input) OnEndTurn?.Invoke();
     }
 
     // Start is called before the first frame update

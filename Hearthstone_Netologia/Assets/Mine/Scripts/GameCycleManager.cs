@@ -26,6 +26,9 @@ namespace Cards
         private Dictionary<PlayerSide, (uint currentMana, uint maxMana)> _manaDict = new();
         [SerializeField]
         private TextMeshProUGUI _manaText;
+        [SerializeField]
+        private GameObject _board;
+        public bool Input { get; private set; } = true;
         private void Awake()
         {
             if (GameCycleSingleton != null) Destroy(this);
@@ -47,15 +50,7 @@ namespace Cards
             _manaDict.Add(PlayerSide.Two, (0, 0));
             SetupHandsBoardDecksDictionaries();
         }
-        /* private void GiveTurnToNextPlayer()
-        {
-            if ((int)CurrentPlayer + 1 < Enum.GetNames(typeof(PlayerSide)).Length)
-            {
-                ++CurrentPlayer;
-            }
-            else CurrentPlayer = 0;
-        } */
-        
+        #region EndTurnPressed
         private void EndTurn()
         {
             ChangeCurrentPlayerAndCardsVisibility();
@@ -64,50 +59,51 @@ namespace Cards
         }
         private void ChangeCurrentPlayerAndCardsVisibility()
         {
+            // Скрытие карт текущего игрока
             foreach (var handPosition in _handsDict[CurrentPlayer])
             {
                 if (handPosition.LinkedCard != null) handPosition.LinkedCard.transform.eulerAngles = new Vector3(0, 0, 0);
             }
-            if ((int)CurrentPlayer + 1 < Enum.GetNames(typeof(PlayerSide)).Length)
-            {
-                ++CurrentPlayer;
-            }
+            // Передача хода следующему игроку
+            if ((int)CurrentPlayer + 1 < Enum.GetNames(typeof(PlayerSide)).Length) ++CurrentPlayer;            
             else CurrentPlayer = 0;
+            // Открытие карт нового игрока
             foreach (var handPosition in _handsDict[CurrentPlayer])
             {
                 if (handPosition.LinkedCard != null) handPosition.LinkedCard.transform.eulerAngles = new Vector3(0, 0, 180);
             }
+            // Отзеркаливание стола
+            _board.transform.eulerAngles = (CurrentPlayer == PlayerSide.One) ? new Vector3(0, 180, 0) : Vector3.zero;
         }
-        private IEnumerator CameraMovementAndGivingCardStart() //todo ХУЙНЯ КАКАЯ ТО ЛОЛ)))))))))))
+        private IEnumerator CameraMovementAndGivingCardStart()
         {
-            /* float time = 0;
-            if (_camera.transform.eulerAngles.y == 0 )
+            Input = false;
+            float time = 0;
+            if (_camera.transform.eulerAngles.y == 0) //todo хз почему вообще работает, если не лень будет, разобраться
             {
                 while (time < _timeForCameraMove)
                 {
                     _camera.transform.rotation *= Quaternion.Euler(new Vector3(0, 0, (180 * Time.deltaTime) / _timeForCameraMove));
-                    // _camera.transform.eulerAngles += new Vector3(0, (180 * Time.deltaTime) / _timeForCameraMove, 0);
                     time += Time.deltaTime;
                     yield return null;
                 }
-                _camera.transform.eulerAngles = new Vector3(_camera.transform.eulerAngles.x, _camera.transform.eulerAngles.y, 180);
+                _camera.transform.rotation = Quaternion.Euler(new Vector3(90, 0, 180));
             }
             else
             {
                 while (time < _timeForCameraMove)
                 {
                     _camera.transform.rotation *= Quaternion.Euler(new Vector3(0, 0, -(180 * Time.deltaTime) / _timeForCameraMove));
-                    // _camera.transform.eulerAngles -= new Vector3(0, (180 * Time.deltaTime) / _timeForCameraMove, 0);
                     time += Time.deltaTime;
                     yield return null;
                 }
-                 _camera.transform.eulerAngles = new Vector3(_camera.transform.eulerAngles.x, _camera.transform.eulerAngles.y, 0);
-            } */
-            yield return null;
+                _camera.transform.rotation = Quaternion.Euler(new Vector3(90, 0, 0));
+            }
+            Input = true;
             // Выдача карты новому игроку
             GiveNewPlayerACard();
         }
-        #region GiveACard
+        
         private void GiveNewPlayerACard()
         {
             var newCard = DeckManagerSingleton.GetRandomCardFromDeck(CurrentPlayer);
@@ -118,7 +114,7 @@ namespace Cards
             StartCoroutine(GiveCard(CurrentPlayer, newCardComp, emptyHandPosition));
         }
         private IEnumerator GiveCard(PlayerSide player, Card newCard, HandPosition emptyHandPosition)
-        {           
+        {
             float time = 0;
             Vector3 startPos = newCard.transform.position;
             Vector3 endPos = emptyHandPosition.transform.position;
@@ -133,12 +129,13 @@ namespace Cards
             newCard.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 180));
             emptyHandPosition.SetLinkedCard(newCard.GetComponent<Card>());
         }
-        #endregion
+        #endregion        
         private void ChangeMana(PlayerSide player, uint deltaCurrent, uint deltaMax = 0)
         {
             _manaDict[player] = (_manaDict[player].currentMana + deltaCurrent, _manaDict[player].maxMana + deltaMax);
             _manaText.text = _manaDict[player].currentMana + "/" + _manaDict[player].maxMana;
-        }
+        }       
+
         private void SetupHandsBoardDecksDictionaries()
         {
             // Добавление в словарь HandPositions (зачем так сложно непонятно делал бы для двух не парился)

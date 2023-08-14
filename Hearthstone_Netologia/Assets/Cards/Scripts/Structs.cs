@@ -34,7 +34,7 @@ namespace Cards
             propData.Type = data._type;
             return propData;
         } */
-        
+
     }
 
     [Serializable]

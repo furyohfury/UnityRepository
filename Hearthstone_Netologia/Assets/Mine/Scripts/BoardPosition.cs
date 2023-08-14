@@ -6,7 +6,7 @@ namespace Cards
 {
     public class BoardPosition : MonoBehaviour
     {
-        [field : SerializeField]
+        [field: SerializeField]
         public PlayerSide Player { get; private set; }
         [field: SerializeField]
         public Card LinkedCard { get; private set; }

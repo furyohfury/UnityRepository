@@ -12,6 +12,6 @@ namespace Cards
         public Card LinkedCard { get; private set; }
         // Start is called before the first frame update
         public void SetLinkedCard(Card card) => LinkedCard = card;
-        
+
     }
 }

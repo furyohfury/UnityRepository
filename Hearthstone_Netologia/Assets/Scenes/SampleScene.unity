@@ -491,6 +491,7 @@ MonoBehaviour:
   _camera: {fileID: 963194227}
   _timeForCameraMove: 2
   _manaText: {fileID: 1744707207}
+  _board: {fileID: 1276154431}
 --- !u!1 &487833938
 GameObject:
   m_ObjectHideFlags: 0
@@ -1538,14 +1539,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1276154431}
-  m_LocalRotation: {x: 0, y: -1, z: 0, w: 0}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 177, y: 1, z: 100}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 6
-  m_LocalEulerAnglesHint: {x: 0, y: -180, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!114 &1319083140
 MonoBehaviour:
   m_ObjectHideFlags: 0

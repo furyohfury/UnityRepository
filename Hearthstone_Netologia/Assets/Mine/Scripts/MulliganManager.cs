@@ -34,7 +34,7 @@ namespace Cards
         private void OnDisable()
         {
             _mulliganEnd.OnMulliganEndClick -= MulliganFinish;
-        }       
+        }
 
         private void Start()
         {
@@ -74,7 +74,7 @@ namespace Cards
         private IEnumerator MulliganStartAnimation(PlayerSide player, IEnumerable<GameObject> mulliganCards)
         {
             Input = false;
-            List<GameObject> mulCards = mulliganCards.ToList();            
+            List<GameObject> mulCards = mulliganCards.ToList();
             // Выдать карты на позиции
             for (int i = 0; i < _mulliganSize; i++)
             {
@@ -82,9 +82,9 @@ namespace Cards
                 Vector3 startPos = mulCards[i].transform.position;
                 Vector3 endPos = new Vector3(_mulliganPositions[i].transform.position.x, _mulliganPositions[i].transform.position.y - 1, _mulliganPositions[i].transform.position.z);
                 while (time < _timeToMove)
-                {                    
+                {
                     mulCards[i].transform.position = Vector3.Lerp(startPos, endPos, time / _timeToMove);
-                    mulCards[i].transform.rotation *= Quaternion.Euler(new Vector3(0, 0,  (180 * Time.deltaTime) / _timeToMove));
+                    mulCards[i].transform.rotation *= Quaternion.Euler(new Vector3(0, 0, (180 * Time.deltaTime) / _timeToMove));
                     time += Time.deltaTime;
                     yield return null;
                 }
@@ -97,12 +97,12 @@ namespace Cards
         private void MulliganChange(PlayerSide player, IEnumerable<MulliganPosition> mulliganPositions)
         {
             StartCoroutine(MulliganChangeCardsAnimation(player, mulliganPositions));
-        }        
+        }
         private IEnumerator MulliganChangeCardsAnimation(PlayerSide player, IEnumerable<MulliganPosition> mulliganPositions)
         {
             Input = false;
             //вернуть одну, дестрой её, отдать новую
-            foreach(MulliganPosition mullPos in mulliganPositions)
+            foreach (MulliganPosition mullPos in mulliganPositions)
             {
                 float time = 0;
                 Vector3 startPos = mullPos.LinkedCard.transform.position;
@@ -130,19 +130,19 @@ namespace Cards
                 }
                 newCard.transform.position = endPos;
                 newCard.transform.eulerAngles = new Vector3(0, 0, 180);
-                mullPos.SetLinkedCard(newCard.GetComponent<Card>());                
+                mullPos.SetLinkedCard(newCard.GetComponent<Card>());
             }
             // Добавление выбранных карт в руку
             List<HandPosition> handOfPlayer = FindObjectsOfType<HandPosition>().Where((handPos) => handPos.Player == player).OrderBy((pos) => pos.gameObject.name).ToList();
             StartCoroutine(MulliganFinishAnimation(player, handOfPlayer));
-            Input = true;            
+            Input = true;
         }
 
         private void MulliganFinish(PlayerSide player)
         {
             // Проверка всех нажатых и смена у них карт
             List<MulliganPosition> mulliganToChange = _mulliganPositions.Where((position) => position.Change).ToList();
-            MulliganChange(player, mulliganToChange);                     
+            MulliganChange(player, mulliganToChange);
         }
         private IEnumerator MulliganFinishAnimation(PlayerSide player, IEnumerable<HandPosition> hand)
         {
@@ -165,7 +165,7 @@ namespace Cards
                 }
                 mullPos.LinkedCard.transform.position = endPos;
                 mullPos.LinkedCard.GetComponent<Card>().BeingMulliganed(false);
-            }            
+            }
             Input = true;
             if ((int)_currentPlayer + 1 < Enum.GetNames(typeof(PlayerSide)).Length)
             {
@@ -177,7 +177,7 @@ namespace Cards
         {
             // Уничтожение всех элементов для муллигана
             Destroy(_mulliganEnd.gameObject);
-            foreach(var mullPos in _mulliganPositions)
+            foreach (var mullPos in _mulliganPositions)
             {
                 Destroy(mullPos);
             }

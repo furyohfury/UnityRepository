@@ -74,11 +74,12 @@ namespace Cards
         {
             Deck deck = (player == PlayerSide.One) ? _playerOneDeck : _playerTwoDeck;
             // Создание нового GO карты и присваивание ей данных рандомной карты из колоды
-            GameObject cardGO = Instantiate(_cardPrefab, deck.transform.position, Quaternion.identity);
+            GameObject cardGO = Instantiate(_cardPrefab, deck.transform.position, Quaternion.identity);            
+            cardGO.transform.position = deck.transform.position;
             Card cardComp = cardGO.GetComponent<Card>();
             cardComp.SetCardDataAndVisuals(deck.GetRandomCard());
+            cardComp.Player = player;
             cardGO.name = cardComp.GetCardPropertyData()._name;
-            cardGO.transform.position = deck.transform.position;
             return cardGO;
         }
         public void AddCardToDeck(PlayerSide player, Card card)

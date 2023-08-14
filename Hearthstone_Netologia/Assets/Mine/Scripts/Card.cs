@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using TMPro;
+using static Cards.GameCycleManager;
 
 namespace Cards
 {
     public class Card : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
+        public PlayerSide Player { get; set; }
         protected static GameObject _draggingCard;
         private Camera _camera;
         [SerializeField]
@@ -25,35 +27,36 @@ namespace Cards
         [SerializeField]
         private TextMeshPro _description;
         private CardPropertyData _cardData;
-        public bool IsBeingMulliganned { get; private set; }  = false;
+        public bool IsBeingMulliganned { get; private set; } = false;
         private void Awake()
         {
             _camera = Camera.main;
         }
-         public void OnBeginDrag(PointerEventData eventData)
+        #region DragiItd
+        public void OnBeginDrag(PointerEventData eventData)
         {
-            if (IsBeingMulliganned) return;
+            if (IsBeingMulliganned || !GameCycleSingleton.Input || Player != GameCycleSingleton.CurrentPlayer) return;
             _draggingCard = gameObject;
         }
 
         public void OnDrag(PointerEventData eventData)
         {
-            if (_draggingCard == null || IsBeingMulliganned) return;
+            if (_draggingCard == null || IsBeingMulliganned || !GameCycleSingleton.Input || Player != GameCycleSingleton.CurrentPlayer) return;
             Vector3 pos = new(_camera.ScreenToWorldPoint(Input.mousePosition).x, _draggingCard.transform.position.y, _camera.ScreenToWorldPoint(Input.mousePosition).z);
             _draggingCard.transform.position = pos;
         }
 
         public void OnEndDrag(PointerEventData eventData)
         {
-            if (IsBeingMulliganned) return;
+            if (IsBeingMulliganned || !GameCycleSingleton.Input || Player != GameCycleSingleton.CurrentPlayer) return;
             // CarPosition - 6 слой
-            LayerMask handposition = LayerMask.GetMask("Hand", "Board");
-            if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, 20, handposition))
+            LayerMask handOrBoardPosition = LayerMask.GetMask("Hand", "Board");
+            if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, 20, handOrBoardPosition))
             {
                 _draggingCard.transform.position = new Vector3(hit.collider.transform.position.x, _draggingCard.transform.position.y, hit.collider.transform.position.z);
             }
             _draggingCard = null;
-        } 
+        }
         public void OnPointerEnter(PointerEventData eventData)
         {
             if (IsBeingMulliganned) return;
@@ -67,6 +70,7 @@ namespace Cards
             gameObject.transform.localScale /= 1.2f;
             // gameObject.transform.position -= Vector3.up * 2;
         }
+        #endregion
         public CardPropertyData GetCardPropertyData()
         {
             return _cardData;
@@ -124,6 +128,14 @@ namespace Cards
             _cardData._type = data._type;
             _description.text = data._description;
             _cardData._description = data._description;
+        }
+        public void ChangeAttack(int delta)
+        {
+            _cardData._attack += delta;
+        }
+        public void ChangeHP(int delta)
+        {
+            _cardData._health += delta;
         }
         public void BeingMulliganed(bool mulliganed)
         {
