@@ -6,7 +6,7 @@ namespace Cards
 {
     public enum CardUnitType : byte
     {
-        None = 0,
+        Common = 0,
         Murloc = 1,
         Beast = 2,
         Elemental = 3,
@@ -23,7 +23,7 @@ namespace Cards
     }
     public enum PlayerSide : byte
     {
-        One,
-        Two
+        One = 0,
+        Two = 1
     }
 }

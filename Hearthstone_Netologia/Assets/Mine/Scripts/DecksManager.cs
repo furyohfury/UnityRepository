@@ -18,6 +18,7 @@ namespace Cards
         private Deck _playerOneDeck;
         [SerializeField]
         private Deck _playerTwoDeck;
+        // private Dictionary<PlayerSide, Deck> _decksDict = new();
         private string _pathToPacks = "Cards";
         private CardPackConfiguration[] _packs;
         private List<CardPropertiesData> AllCards = new();
@@ -31,6 +32,11 @@ namespace Cards
             if (DeckManagerSingleton != null) Destroy(this);
             else DeckManagerSingleton = this;
             SetAllDecks();
+            var decks = FindObjectsOfType<Deck>();
+            /* foreach (var deck in decks)
+            {
+                _decksDict.Add(deck.Player, deck);
+            } */
         }
         private IEnumerable<CardPropertiesData> CreatingAllCardsList(string path)
         {
@@ -45,14 +51,14 @@ namespace Cards
             }
             return all;
         }
-        private IEnumerable<CardPropertiesData> AddCardsToDeck(string[] CardNames)
+        private IEnumerable<CardPropertyData> AddCardsToDeck(string[] CardNames)
         {
-            List<CardPropertiesData> cards = new();
+            List<CardPropertyData> cards = new();
             foreach (string cardName in CardNames)
             {
                 // Ќаходим данные дл€ карты с нужным именем
                 CardPropertiesData cardData = AllCards.SingleOrDefault((card) => card.Name == cardName);
-                cards.Add(cardData);
+                cards.Add(Converting.ConvertToProperty(cardData));
             }
             return cards;
         }
@@ -71,7 +77,18 @@ namespace Cards
             GameObject cardGO = Instantiate(_cardPrefab, deck.transform.position, Quaternion.identity);
             Card cardComp = cardGO.GetComponent<Card>();
             cardComp.SetCardDataAndVisuals(deck.GetRandomCard(isMulliganing));
+            cardGO.name = cardComp.GetCardPropertyData()._name;
             return cardGO;
+        }
+        public void AddCardToDeck(PlayerSide player, Card card)
+        {
+            Deck deck = (player == PlayerSide.One) ? _playerOneDeck : _playerTwoDeck;
+            deck.AddCard(card);
+        }
+        public Vector3 GetDeckPosition(PlayerSide player)
+        {
+            Vector3 pos = (player == PlayerSide.One) ? _playerOneDeck.transform.position : _playerTwoDeck.transform.position;
+            return pos;
         }
     }
 }

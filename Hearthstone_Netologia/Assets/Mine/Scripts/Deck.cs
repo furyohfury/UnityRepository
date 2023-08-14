@@ -11,22 +11,34 @@ namespace Cards
         public PlayerSide Player { get; private set; }
         // public List<GameObject> _deckCards { get; private set; }
         [field: SerializeField]
-        public List<CardPropertiesData> DeckCards { get; private set; }
-        public void SetDeck(IEnumerable<CardPropertiesData> deck)
+        public List<CardPropertyData> DeckCards { get; private set; }
+        public void SetDeck(IEnumerable<CardPropertyData> deck)
         {
             DeckCards = deck.ToList();
         }
-        public CardPropertiesData GetRandomCard(bool isMulliganing = false)
+        public CardPropertyData GetRandomCard(bool isMulliganing = false)
         {
-            CardPropertiesData data = DeckCards[Random.Range(0, DeckCards.Count)];
-            // if (!isMulliganing) DeckCards.Remove(data);
+            CardPropertyData data = DeckCards[Random.Range(0, DeckCards.Count)];
+            // if (!isMulliganing)
+            DeckCards.Remove(data);
             return data;
         }
         public void AddCard(Card card)
         {
-            CardPropertiesData newCard = Convert(card.GetCardPropertyData());
-            DeckCards.Add(newCard);
-            //todo че с id и описанием
+            DeckCards.Add(card.GetCardPropertyData());
+        }
+        public void AddCard(CardPropertyData data)
+        {
+            DeckCards.Add(data);
+        }
+        public void AddCard(CardPropertiesData card)
+        {
+            DeckCards.Add(Converting.ConvertToProperty(card));
+        }
+        public void AddCard(GameObject card)
+        {
+            if(card.TryGetComponent(out Card cardComp))
+            AddCard(cardComp);
         }
     }
 }

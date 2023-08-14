@@ -2,19 +2,23 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using static Cards.MulliganManager;
 
 namespace Cards
 {
     public class MulliganPosition : MonoBehaviour, IPointerClickHandler
     {
-        public Card Card { get; private set; }
-        public bool Changed { get; private set; } = false;
+        [field :SerializeField]
+        public Card LinkedCard { get; private set; }
+        public bool Change { get; private set; } = false;
         private PlayerSide _currentPlayer;
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            Changed = true;
-            if (!Changed) OnMulliganClick?.Invoke(_currentPlayer, this);
+            if (!MulliganSingleton.Input) return;
+            LinkedCard.transform.eulerAngles = Vector3.zero;
+            Change = true;
+            // if (!Changed) OnMulliganClick?.Invoke(_currentPlayer, this);
         }
 
         void Start()
@@ -25,7 +29,15 @@ namespace Cards
         {
 
         }
-        public delegate void MulliganClick(PlayerSide player, MulliganPosition mulpos);
-        public event MulliganClick OnMulliganClick;
+        public void SetLinkedCard(Card card)
+        {
+            LinkedCard = card;
+        }
+        public void ResetMullliganPosition()
+        {
+            Change = false;
+        }
+        // public delegate void MulliganClick(PlayerSide player, MulliganPosition mulpos);
+        // public event MulliganClick OnMulliganClick;
     }
 }

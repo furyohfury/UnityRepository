@@ -1,9 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Xml.Linq;
-using System;
-using UnityEditor;
 using Cards.ScriptableObjects;
 using System.Linq;
 using TMPro;
@@ -12,7 +8,7 @@ namespace Cards
 {
     public class DeckCreator : MonoBehaviour
     {
-        public static DeckCreator DeckCreatorSingleton;
+        /* public static DeckCreator DeckCreatorSingleton;
         [SerializeField]
         private CardPackConfiguration[] _commonPacks;
         [SerializeField]
@@ -85,8 +81,9 @@ namespace Cards
         {
             CardPackConfiguration heroPack = _classPacks.FirstOrDefault((pack) => pack._sideType == hero);
             if (heroPack == null) return;
-            foreach (var card in heroPack._cards)
+            foreach (var cardProps in heroPack._cards)
             {
+                CardPropertyData card = CardUtility.ConvertToProperty(cardProps);
                 if (ClassCardUtility.CheckUncollectible(card.Id)) continue;
                 var cardGO = Instantiate(_cardPrefab, _classStartPosition.transform.position, Quaternion.identity);
                 cardGO.transform.localScale *= _scale;
@@ -103,6 +100,6 @@ namespace Cards
             _camera.transform.position = _cameraPositionOnChoosingCards;
             CommonCardsConfiguration();
             ClassCardsConfiguration(hero);
-        }
+        } */
     }
 }

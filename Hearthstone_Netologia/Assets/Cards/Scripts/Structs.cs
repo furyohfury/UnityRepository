@@ -23,7 +23,7 @@ namespace Cards
         public int _health;
         [SerializeField]
         public CardUnitType _type;
-        public static CardPropertiesData Convert(CardPropertyData data)
+        /* public static CardPropertiesData ConvertToProperties(CardPropertyData data)
         {
             CardPropertiesData propData = new();
             propData.Cost = (ushort) data._cost;
@@ -33,7 +33,8 @@ namespace Cards
             propData.Health = (ushort)data._health;
             propData.Type = data._type;
             return propData;
-        }
+        } */
+        
     }
 
     [Serializable]

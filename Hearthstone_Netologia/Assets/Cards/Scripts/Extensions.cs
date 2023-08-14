@@ -2,9 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Xml.Linq;
-
 using UnityEditor;
-
 using UnityEngine;
 
 namespace Cards
@@ -13,8 +11,8 @@ namespace Cards
     {
         private const string c_ConfigPath = "//Cards//Resources//CommonCardDescription.xml";
 
-        private static readonly Dictionary<uint, string> _descriptions = new Dictionary<uint, string>();
-        private static readonly List<uint> _uncollectibleIds = new List<uint>();
+        public static Dictionary<uint, string> _descriptions { get; private set; } = new Dictionary<uint, string>();
+        public static List<uint> _uncollectibleIds { get; private set; } = new List<uint>();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         private static void Configuration()
@@ -61,7 +59,7 @@ namespace Cards
         /// </summary>
         /// <param name="id">Идентификатор карты</param>
         /// <returns>Описание карты</returns>
-        public static string GetDescriptionById(uint id)
+        public static string GetCommonDescriptionById(uint id)
         {
 #if UNITY_EDITOR
             if (!_descriptions.ContainsKey(id)) Debug.LogError($" XML-документ не содержит ключ {id}");
@@ -76,13 +74,26 @@ namespace Cards
 #endif
             return _uncollectibleIds.Contains(id);
         }
+        /* public static CardPropertyData ConvertToProperty(CardPropertiesData data)
+        {
+            CardPropertyData converted = new();
+            converted._cost = data.Cost;
+            converted._image = data.Texture;
+            converted._name = data.Name;
+            if (data.Type == CardUnitType.Common) converted._description = CardUtility.GetCommonDescriptionById(data.Id);
+            else converted._description = ClassCardUtility.GetClassDescriptionById(data.Id);
+            converted._attack = data.Attack;
+            converted._health = data.Health;
+            converted._type = data.Type;
+            return converted;
+        } */
     }
     public static class ClassCardUtility
     {
         private const string c_ConfigPath = "//Cards//Resources//ClassCardDescription.xml";
 
-        private static readonly Dictionary<uint, string> _descriptions = new Dictionary<uint, string>();
-        private static readonly List<uint> _uncollectibleIds = new List<uint>();
+        public static Dictionary<uint, string> _descriptions { get; private set; } = new Dictionary<uint, string>();
+        public static List<uint> _uncollectibleIds { get; private set; } = new List<uint>();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         private static void Configuration()
@@ -129,7 +140,7 @@ namespace Cards
         /// </summary>
         /// <param name="id">Идентификатор карты</param>
         /// <returns>Описание карты</returns>
-        public static string GetDescriptionById(uint id)
+        public static string GetClassDescriptionById(uint id)
         {
 #if UNITY_EDITOR
             if (!_descriptions.ContainsKey(id)) Debug.LogError($" XML-документ не содержит ключ {id}");
@@ -143,6 +154,28 @@ namespace Cards
             if (!_descriptions.ContainsKey(id)) Debug.LogError($" XML-документ не содержит ключ {id}");
 #endif
             return _uncollectibleIds.Contains(id);
+        }        
+    }
+    public static class Converting
+    {
+        public static CardPropertyData ConvertToProperty(CardPropertiesData data)
+        {
+            CardPropertyData converted = new();
+            converted._cost = data.Cost;
+            converted._image = data.Texture;
+            converted._name = data.Name;
+            if (CardUtility._descriptions.ContainsKey(data.Id)) converted._description = CardUtility.GetCommonDescriptionById(data.Id);
+            else if (ClassCardUtility._descriptions.ContainsKey(data.Id)) converted._description = ClassCardUtility.GetClassDescriptionById(data.Id);
+            else
+            {
+#if UNITY_EDITOR
+                Debug.LogError($" XML-документ не содержит ключ {data.Id}");
+#endif
+            }
+            converted._attack = data.Attack;
+            converted._health = data.Health;
+            converted._type = data.Type;
+            return converted;
         }
     }
 }
