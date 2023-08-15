@@ -19,7 +19,7 @@ namespace Cards
         public CardPropertyData GetRandomCard()
         {
             CardPropertyData data = DeckCards[Random.Range(0, DeckCards.Count)];
-            DeckCards.Remove(data);
+            DeckCards.Remove(data); //todo нормально не работает
             return data;
         }
         public void AddCard(Card card)

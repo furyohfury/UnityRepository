@@ -27,7 +27,13 @@ namespace Cards
         [SerializeField]
         private TextMeshPro _description;
         private CardPropertyData _cardData;
+        public bool CanAttack { get; set; }  = false;
         public bool IsBeingMulliganned { get; private set; } = false;
+        private Vector3 _positionBeforeDrag;
+        [field: SerializeField]
+        public BoardPosition LinkedBoardPosition { get; private set; }
+        [field: SerializeField]
+        public HandPosition LinkedHandPosition { get; private set; }
         private void Awake()
         {
             _camera = Camera.main;
@@ -35,8 +41,9 @@ namespace Cards
         #region DragiItd
         public void OnBeginDrag(PointerEventData eventData)
         {
-            if (IsBeingMulliganned || !GameCycleSingleton.Input || Player != GameCycleSingleton.CurrentPlayer) return;
+            if (IsBeingMulliganned || !GameCycleSingleton.Input || Player != GameCycleSingleton.CurrentPlayer || GameCycleSingleton.ManaDict[Player].currentMana < _cardData._cost) return;
             _draggingCard = gameObject;
+            _positionBeforeDrag = transform.position;
         }
 
         public void OnDrag(PointerEventData eventData)
@@ -48,27 +55,43 @@ namespace Cards
 
         public void OnEndDrag(PointerEventData eventData)
         {
-            if (IsBeingMulliganned || !GameCycleSingleton.Input || Player != GameCycleSingleton.CurrentPlayer) return;
-            // CarPosition - 6 слой
-            LayerMask handOrBoardPosition = LayerMask.GetMask("Hand", "Board");
-            if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, 20, handOrBoardPosition))
+            if (_draggingCard == null ||  IsBeingMulliganned || !GameCycleSingleton.Input || Player != GameCycleSingleton.CurrentPlayer) return;
+            LayerMask boardPositionMask = LayerMask.GetMask("Board");
+            if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, 20, boardPositionMask) && hit.collider.TryGetComponent(out BoardPosition boardPosition) && Player == boardPosition.Player && boardPosition.LinkedCard == null && LinkedBoardPosition == null)
             {
+                // Перемещение карты на BoardPosition
                 _draggingCard.transform.position = new Vector3(hit.collider.transform.position.x, _draggingCard.transform.position.y, hit.collider.transform.position.z);
+                //Отвязка карты от HandPosition
+                if (LinkedHandPosition != null)
+                {
+                    LinkedHandPosition.SetLinkedCard(null);
+                    LinkedHandPosition = null;
+                }
+                // Привязка карты к BoardPosition
+                boardPosition.SetLinkedCard(this);
+                if (LinkedBoardPosition != null) LinkedBoardPosition.SetLinkedCard(null);
+                LinkedBoardPosition = boardPosition;
+                // Минус мана
+                GameCycleSingleton.ChangeCurrentMana(Player, -_cardData._cost);
+            }
+            else
+            {
+                Debug.Log("returning");
+                transform.position = _positionBeforeDrag;
             }
             _draggingCard = null;
         }
         public void OnPointerEnter(PointerEventData eventData)
         {
+            //todo через анимацию требование
             if (IsBeingMulliganned) return;
             gameObject.transform.localScale *= 1.2f;
-            // gameObject.transform.position += Vector3.up * 2;
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
             if (IsBeingMulliganned) return;
             gameObject.transform.localScale /= 1.2f;
-            // gameObject.transform.position -= Vector3.up * 2;
         }
         #endregion
         public CardPropertyData GetCardPropertyData()
@@ -140,6 +163,14 @@ namespace Cards
         public void BeingMulliganed(bool mulliganed)
         {
             IsBeingMulliganned = mulliganed;
+        }
+        public void SetLinkedBoardPosition (BoardPosition boardPosition)
+        {
+            LinkedBoardPosition = boardPosition;
+        }
+        public void SetLinkedHandPosition(HandPosition handPosition)
+        {
+            LinkedHandPosition = handPosition;
         }
     }
 }

@@ -152,7 +152,10 @@ namespace Cards
             // Перенос кард в руку
             foreach (var mullPos in _mulliganPositions)
             {
+                // HandPosition и Card присваиваем инфу друг о друге
                 handPositions[i].SetLinkedCard(mullPos.LinkedCard);
+                mullPos.LinkedCard.SetLinkedHandPosition(handPositions[i]);
+                mullPos.LinkedCard.Player = player;
                 float time = 0;
                 Vector3 startPos = mullPos.LinkedCard.transform.position;
                 Vector3 endPos = handPositions[i++].transform.position;

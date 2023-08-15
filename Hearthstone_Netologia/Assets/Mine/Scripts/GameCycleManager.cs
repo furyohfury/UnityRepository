@@ -23,7 +23,8 @@ namespace Cards
         private Dictionary<PlayerSide, Deck> _decksDict = new();
         private int _numberOfPlayers;
         // private (PlayerSide player, uint currentMana, uint maxMana) _manaData = (PlayerSide.One, 1, 1);
-        private Dictionary<PlayerSide, (uint currentMana, uint maxMana)> _manaDict = new();
+        public Dictionary<PlayerSide, (int currentMana, int maxMana)> ManaDict { get; private set; }  = new();
+        private int _maxPossibleMana = 10;
         [SerializeField]
         private TextMeshProUGUI _manaText;
         [SerializeField]
@@ -46,8 +47,8 @@ namespace Cards
         {
             _numberOfPlayers = Enum.GetNames(typeof(PlayerSide)).Length;
             // Дефолт мана
-            _manaDict.Add(PlayerSide.One, (1, 1));
-            _manaDict.Add(PlayerSide.Two, (0, 0));
+            ManaDict.Add(PlayerSide.One, (1, 1));
+            ManaDict.Add(PlayerSide.Two, (0, 0));
             SetupHandsBoardDecksDictionaries();
         }
         #region EndTurnPressed
@@ -55,7 +56,7 @@ namespace Cards
         {
             ChangeCurrentPlayerAndCardsVisibility();
             StartCoroutine(CameraMovementAndGivingCardStart());
-            ChangeMana(CurrentPlayer, 1, 1);
+            ChangeStartTurnMana(CurrentPlayer);
         }
         private void ChangeCurrentPlayerAndCardsVisibility()
         {
@@ -74,6 +75,9 @@ namespace Cards
             }
             // Отзеркаливание стола
             _board.transform.eulerAngles = (CurrentPlayer == PlayerSide.One) ? new Vector3(0, 180, 0) : Vector3.zero;
+            Vector3 firstDeckPos = _decksDict[PlayerSide.One].transform.position;
+            _decksDict[PlayerSide.One].transform.position = _decksDict[PlayerSide.Two].transform.position;
+            _decksDict[PlayerSide.Two].transform.position = firstDeckPos;
         }
         private IEnumerator CameraMovementAndGivingCardStart()
         {
@@ -127,13 +131,24 @@ namespace Cards
             }
             newCard.transform.position = endPos;
             newCard.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 180));
+            newCard.Player = player;
+            newCard.SetLinkedHandPosition(emptyHandPosition);
             emptyHandPosition.SetLinkedCard(newCard.GetComponent<Card>());
         }
-        #endregion        
-        private void ChangeMana(PlayerSide player, uint deltaCurrent, uint deltaMax = 0)
+        #endregion
+        private void ChangeStartTurnMana(PlayerSide player)
         {
-            _manaDict[player] = (_manaDict[player].currentMana + deltaCurrent, _manaDict[player].maxMana + deltaMax);
-            _manaText.text = _manaDict[player].currentMana + "/" + _manaDict[player].maxMana;
+            if (ManaDict[player].maxMana < _maxPossibleMana)
+            {
+                ManaDict[player] = (ManaDict[player].maxMana + 1, ManaDict[player].maxMana + 1);
+            }
+            else ManaDict[player] = (_maxPossibleMana, _maxPossibleMana);
+            _manaText.text = ManaDict[player].currentMana + "/" + ManaDict[player].maxMana;
+        }
+        public void ChangeCurrentMana(PlayerSide player, int deltaCurrent)
+        {
+            ManaDict[player] = (ManaDict[player].currentMana + deltaCurrent, ManaDict[player].maxMana);
+            _manaText.text = ManaDict[player].currentMana + "/" + ManaDict[player].maxMana;
         }       
 
         private void SetupHandsBoardDecksDictionaries()
