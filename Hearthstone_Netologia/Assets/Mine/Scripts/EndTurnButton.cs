@@ -8,7 +8,7 @@ public class EndTurnButton : MonoBehaviour, IPointerClickHandler
 {
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (GameCycleSingleton.Input) OnEndTurn?.Invoke();
+        if (GameCycleSingleton.InputOn) OnEndTurn?.Invoke();
     }
 
     // Start is called before the first frame update
