@@ -27,7 +27,8 @@ namespace Cards
         private TextMeshPro _type;
         [SerializeField]
         private TextMeshPro _description;
-        public CardPropertyData CardData { get; private set; }
+        private CardPropertyData _cardData;
+        private int _maxHP;
         public bool CanAttack { get; set; } = false;
         public bool IsBeingMulliganned { get; private set; } = false;
         private Vector3 _positionBeforeDrag;
@@ -35,6 +36,8 @@ namespace Cards
         public BoardPosition LinkedBoardPosition { get; private set; }
         [field: SerializeField]
         public HandPosition LinkedHandPosition { get; private set; }
+        public bool Charge { get; set; } = false;
+        public bool Taunt { get; set; } = false;
         private void Awake()
         {
             // _camera = Camera.main;
@@ -114,31 +117,31 @@ namespace Cards
         #endregion
         public CardPropertyData GetCardPropertyData()
         {
-            return CardData;
+            return _cardData;
         }
         public void SetCardDataAndVisuals(Texture texture, int cost, string name, int attack, int health, CardUnitType type, string description)
         {
-            CardPropertyData local = new();
             _image.material.mainTexture = texture;
             _image.material.mainTextureScale = new Vector2(1, 1);
-            local._image = texture;
+            _cardData._image = texture;
             _cost.text = "" + cost;
-            local._cost = cost;
+            _cardData._cost = cost;
             _name.text = name;
-            local._name = name;
+            _cardData._name = name;
             _attack.text = "" + attack;
-            local._attack = attack;
+            _cardData._attack = attack;
             _health.text = "" + health;
-            local._health = health;
+            _cardData._health = health;
+            _maxHP = health;
             _type.text = "" + type;
-            local._type = type;
+            _cardData._type = type;
             _description.text = description;
-            local._description = description;
-            CardData = local;
+            _cardData._description = description;
         }
         public void SetCardDataAndVisuals(CardPropertyData data)
         {
-            CardData = data;
+            _cardData = data;
+            _maxHP = data._health;
             _image.material.mainTexture = data._image;
             _image.material.mainTextureScale = new Vector2(1, 1);
             _cost.text = "" + data._cost;
@@ -150,17 +153,21 @@ namespace Cards
         }
         public void ChangeAttack(int delta)
         {
-            CardPropertyData local = CardData;
-            local._attack += delta;
-            _attack.text = local._attack + "";
-            CardData = local;
+            _cardData._attack += delta;
         }
-        public void ChangeHP(int delta)
+        public void ChangeHP(int delta, bool isHealing = false)
         {
-            CardPropertyData local = CardData;
-            local._health += delta;
-            _health.text = local._health + "";
-            CardData = local;
+            if (isHealing)
+            {
+                if (_cardData._health + delta <= _maxHP) _cardData._health += delta;
+                else _cardData._health = _maxHP;
+            }
+            else
+            {
+                _cardData._health += delta;
+                _maxHP += delta;
+            }
+            
         }
         public void BeingMulliganed(bool mulliganed)
         {
@@ -206,6 +213,12 @@ namespace Cards
                 //todo взрыв портрета героя
             }
         } */
+        public void PlayedEffect()
+        {
+            // Если чардж то сразу может бить
+            if (Charge) CanAttack = true;
+
+        }
         public delegate void Drags(Card card);
         public event Drags OnDragBegin;
         public event Drags OnDragging;

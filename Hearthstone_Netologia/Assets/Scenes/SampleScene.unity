@@ -435,26 +435,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _playerOneCardNames:
-  - Voodoo Doctor
-  - Grimscale Oracle
-  - Murloc Tidehunter
-  - Dalaran Mage
-  - Raid Leader
-  - Acidic Swamp Ooze
-  - Stormwind Knight
   - Elven Archer
-  - Stormpike Commando
-  - Water Elemental
+  - Elven Archer
+  - Novice Engineer
+  - Elven Archer
+  - Novice Engineer
+  - Shattered Sun Cleric
+  - Shattered Sun Cleric
+  - Shattered Sun Cleric
+  - Elven Archer
+  - Shattered Sun Cleric
   _playerTwoCardNames:
   - Voodoo Doctor
-  - Grimscale Oracle
-  - Murloc Tidehunter
-  - Dalaran Mage
-  - Raid Leader
-  - Chillwind Yeti
-  - Acidic Swamp Ooze
-  - Stormwind Knight
-  - Water Elemental
+  - Novice Engineer
+  - Novice Engineer
+  - Novice Engineer
+  - Shattered Sun Cleric
+  - Elven Archer
+  - Shattered Sun Cleric
+  - Shattered Sun Cleric
+  - Shattered Sun Cleric
   - Elven Archer
   _playerOneDeck: {fileID: 1736401433}
   _playerTwoDeck: {fileID: 337221897}

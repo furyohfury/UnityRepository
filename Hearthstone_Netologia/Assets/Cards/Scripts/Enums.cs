@@ -26,4 +26,11 @@ namespace Cards
         One = 0,
         Two = 1
     }
+    public enum PlayedEffects : byte
+    {
+        Charge = 0,
+        Taunt = 1,
+        Battlecry = 2,
+        Unique = 100
+    }
 }

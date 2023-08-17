@@ -80,4 +80,16 @@ namespace Cards
         public CardPropertiesData _commonCardPacks;
         public CardPropertiesData _classCardPacks;
     }
+    public struct Charge
+    {
+        public static readonly string[] ChargeCards = { "Stonetusk Boar", "Bluegill Warrior", "Wolfrider", "Stormwind Knight", "Reckless Rocketeer", "Kor'kron Elite" };
+    }
+    public struct Taunt
+    {
+        public static readonly string[] TauntCards = { "Goldshire Footman", "Frostwolf Grunt", "Ironfur Grizzly", "Silverback Patriarch", "Sen'jin Shieldmasta", "Booty Bay Bodyguard", "Lord of the Arena" };
+    }
+    public struct BattlecryList
+    {
+        public static readonly string[] BattlecryCards = { "Elven Archer", "Voodoo Doctor", "Acidic Swamp Ooze", "Murloc Tidehunter", "Novice Engineer", "Ironforge Rifleman", "Razorfen Hunter", "Shattered Sun Cleric", "Dragonling Mechanic", "Gnomish Inventor", "Darkscale Healer", "Frostwolf Warlord", "Nightblade", "Stormpike Commando" };
+    }
 }

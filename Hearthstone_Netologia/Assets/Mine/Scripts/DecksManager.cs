@@ -78,7 +78,14 @@ namespace Cards
             cardGO.transform.position = deck.transform.position;
             Card cardComp = cardGO.GetComponent<Card>();
             cardComp.SetCardDataAndVisuals(deck.GetRandomCard());
+            // Присвоение свойств карты
             cardComp.Player = player;
+            if (Charge.ChargeCards.Contains(cardComp.GetCardPropertyData()._name))
+            {
+                cardComp.Charge = true;
+                cardComp.CanAttack = true;
+            }
+            if (Taunt.TauntCards.Contains(cardComp.GetCardPropertyData()._name)) cardComp.Taunt = true;
             cardGO.name = cardComp.GetCardPropertyData()._name;
             return cardGO;
         }

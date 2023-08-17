@@ -9,7 +9,7 @@ using UnityEngine.EventSystems;
 using UnityEditor;
 namespace Cards
 {
-    public class GameCycleManager : MonoBehaviour
+    public partial class GameCycleManager : MonoBehaviour
     {
         public static GameCycleManager GameCycleSingleton;
         public PlayerSide CurrentPlayer { get; private set; } = PlayerSide.One;
@@ -123,17 +123,17 @@ namespace Cards
             }
             InputOn = true;
             // Выдача карты новому игроку
-            GiveNewPlayerACard();
+            GivePlayerACard(CurrentPlayer);
         }
 
-        private void GiveNewPlayerACard()
+        public void GivePlayerACard(PlayerSide player)
         {
-            var newCard = DeckManagerSingleton.GetRandomCardFromDeck(CurrentPlayer);
+            var newCard = DeckManagerSingleton.GetRandomCardFromDeck(player);
             Card newCardComp = newCard.GetComponent<Card>();
             //Нахождение пустого места
-            HandPosition emptyHandPosition = _handsDict[CurrentPlayer].FirstOrDefault(pos => pos.LinkedCard == null);
+            HandPosition emptyHandPosition = _handsDict[player].FirstOrDefault(pos => pos.LinkedCard == null);
             if (emptyHandPosition == default) return;
-            StartCoroutine(GiveCard(CurrentPlayer, newCardComp, emptyHandPosition));
+            StartCoroutine(GiveCard(player, newCardComp, emptyHandPosition));
         }
         private IEnumerator GiveCard(PlayerSide player, Card newCard, HandPosition emptyHandPosition)
         {
@@ -183,7 +183,7 @@ namespace Cards
         }
         private void DragBegin(Card card)
         {
-            if (card.IsBeingMulliganned || !InputOn || card.Player != CurrentPlayer || ManaDict[card.Player].currentMana < card.CardData._cost) return;
+            if (card.IsBeingMulliganned || !InputOn || card.Player != CurrentPlayer || ManaDict[card.Player].currentMana < card.GetCardPropertyData()._cost) return;
             _draggingCard = card.gameObject;
             _cardPositionBeforeDrag = card.transform.position;
         }
@@ -199,6 +199,7 @@ namespace Cards
             // Проверка выкладывания карты на поле
             LayerMask boardPositionMask = LayerMask.GetMask("Board");
             LayerMask playerPortraitMask = LayerMask.GetMask("Player");
+            // Разыгрывается на стол
             if (Physics.Raycast(card.transform.position, Vector3.down, out RaycastHit hitBoard, 20, boardPositionMask) && hitBoard.collider.TryGetComponent(out BoardPosition boardPosition) && card.Player == boardPosition.Player && boardPosition.LinkedCard == null && card.LinkedBoardPosition == null)
             {
                 // Перемещение карты на BoardPosition
@@ -214,27 +215,50 @@ namespace Cards
                 if (card.LinkedBoardPosition != null) card.LinkedBoardPosition.SetLinkedCard(null);
                 card.SetLinkedBoardPosition(boardPosition);
                 // Минус мана
-                ChangeCurrentMana(card.Player, -card.CardData._cost);
+                ChangeCurrentMana(card.Player, -card.GetCardPropertyData()._cost);
+                // Есть ли батлкрай
+                if (BattlecryList.BattlecryCards.Contains(card.GetCardPropertyData()._name))
+                {
+                    Battlecry(card);
+                }
+                // card.PlayedEffect();
             }
             // Бьет ли в лицо
             else if (card.CanAttack && Physics.Raycast(card.transform.position, Vector3.down, out RaycastHit hitPlayer, 20, playerPortraitMask) && hitPlayer.collider.TryGetComponent(out PlayerPortrait playerPortrait) && card.Player != playerPortrait.Player)
             {
-                //todo проверка на таунт
-                StartCoroutine(HitFaceAnimation(card, playerPortrait));
+                if (_boardDict[playerPortrait.Player].FirstOrDefault(board => board.LinkedCard.Taunt) != default)
+                {
+                    ReturnCard(card);
+                    Debug.Log("there's taunt");
+                    //todo текст (анимация) что есть таунт
+                }
+                else StartCoroutine(HitFaceAnimation(card, playerPortrait));
             }
-            // Бьет ли карту
-            else if(Physics.Raycast(card.transform.position, Vector3.down, out RaycastHit hitBoardwEnemy, 20, boardPositionMask) && hitBoard.collider.TryGetComponent(out BoardPosition boardPositionwEnemy) && card.Player != boardPositionwEnemy.Player && boardPositionwEnemy.LinkedCard != null && card.LinkedBoardPosition != null)
+            // Бьет ли вражескую карту
+            else if(Physics.Raycast(card.transform.position, Vector3.down, out RaycastHit hitBoardwEnemy, 20, boardPositionMask) && hitBoardwEnemy.collider.TryGetComponent(out BoardPosition boardPositionwEnemy) && card.Player != boardPositionwEnemy.Player && boardPositionwEnemy.LinkedCard != null && card.LinkedBoardPosition != null)
             {
-                StartCoroutine(HitEnemyAnimation(card, boardPositionwEnemy));
+                int tauntSize = _boardDict[boardPositionwEnemy.Player].Where(boardPos => boardPos.LinkedCard.Taunt).ToArray().Length;
+                // Если эта карта не таунт и есть другие таунты
+                if (!boardPositionwEnemy.LinkedCard.Taunt && tauntSize > 0)
+                {
+                    ReturnCard(card);
+                    Debug.Log("there's taunt");
+                    //todo текст (анимация) что есть таунт
+                }
+                else StartCoroutine(HitEnemyAnimation(card, boardPositionwEnemy));
             }
             else
             {
-                // Не выложена на поле и не атакует
+                // Не выложена на поле. А если выложена - не атакует
                 Debug.Log("returning");
-                card.transform.position = _cardPositionBeforeDrag;
+                ReturnCard(card);
             }
             _draggingCard = null;
         }       
+        private void ReturnCard(Card card)
+        {
+            card.transform.position = _cardPositionBeforeDrag;
+        }
 
         private IEnumerator HitFaceAnimation(Card card, PlayerPortrait playerPortrait)
         {
@@ -258,15 +282,9 @@ namespace Cards
                 yield return null;
             }
             card.transform.position = _cardPositionBeforeDrag;
-            playerPortrait.ChangePlayerHealth(-card.CardData._attack);
             card.CanAttack = false;
-            if (playerPortrait.Health <= 0)
-            {
-#if UNITY_EDITOR
-                EditorApplication.isPaused = true;
-#endif
-                //todo взрыв портрета героя
-            }
+            playerPortrait.ChangePlayerHealth(-card.GetCardPropertyData()._attack);          
+            
         }
         private IEnumerator HitEnemyAnimation(Card card, BoardPosition boardPositionwEnemy)
         {
@@ -292,24 +310,21 @@ namespace Cards
             card.transform.position = _cardPositionBeforeDrag;
             card.CanAttack = false;
             // Обе получают пизды
-            card.ChangeHP(-boardPositionwEnemy.LinkedCard.CardData._attack);
-            boardPositionwEnemy.LinkedCard.ChangeHP(-card.CardData._attack);
+            card.ChangeHP(-boardPositionwEnemy.LinkedCard.GetCardPropertyData()._attack);
+            boardPositionwEnemy.LinkedCard.ChangeHP(-card.GetCardPropertyData()._attack);
             // Кто-то сдох?
-            if (card.CardData._health <= 0)
+            CheckAliveAndDestroyCard(card);
+            CheckAliveAndDestroyCard(boardPositionwEnemy.LinkedCard);
+        }
+        private void CheckAliveAndDestroyCard(Card card)
+        {
+            if (card.GetCardPropertyData()._health <= 0)
             {
                 card.OnDragBegin -= DragBegin;
                 card.OnDragging -= DraggingCard;
-                card.OnDragEnd -= DragEnd;                
+                card.OnDragEnd -= DragEnd;
                 Destroy(card.gameObject);
             }
-            if (boardPositionwEnemy.LinkedCard.CardData._health <= 0)
-            {
-                boardPositionwEnemy.LinkedCard.OnDragBegin -= DragBegin;
-                boardPositionwEnemy.LinkedCard.OnDragging -= DraggingCard;
-                boardPositionwEnemy.LinkedCard.OnDragEnd -= DragEnd;
-                Destroy(boardPositionwEnemy.LinkedCard.gameObject);
-            }
-
         }
         private void SetupHandsBoardDecksDictionaries()
         {

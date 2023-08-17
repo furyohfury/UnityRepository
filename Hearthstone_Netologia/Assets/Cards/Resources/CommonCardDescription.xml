@@ -83,7 +83,7 @@
 		</Unit>
 		<Unit Id="404" Name="Oasis Snapjaw"/>
 		<Unit Id="405" Name="Ogre Magi">
-			#Spee Damage +1/#
+			#Spell Damage +1/#
 		</Unit>
 		<Unit Id="406" Name="Sen'jin Shieldmasta">
 			#Taunt/#
