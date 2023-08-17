@@ -21,7 +21,7 @@ namespace Cards
         // private Dictionary<PlayerSide, Deck> _decksDict = new();
         private string _pathToPacks = "Cards";
         private CardPackConfiguration[] _packs;
-        private List<CardPropertiesData> AllCards = new();
+        public List<CardPropertiesData> AllCards { get; private set; } = new();
         // private List<CardPropertiesData> _commonCards = new();
         // private List<CardPropertiesData> _classCards = new();
         [SerializeField]
@@ -33,10 +33,6 @@ namespace Cards
             else DeckManagerSingleton = this;
             SetAllDecks();
             var decks = FindObjectsOfType<Deck>();
-            /* foreach (var deck in decks)
-            {
-                _decksDict.Add(deck.Player, deck);
-            } */
         }
         private IEnumerable<CardPropertiesData> CreatingAllCardsList(string path)
         {

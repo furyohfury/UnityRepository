@@ -34,6 +34,8 @@ namespace Cards
         public bool InputOn { get; private set; } = true;
         private GameObject _draggingCard;
         private Vector3 _cardPositionBeforeDrag;
+        [SerializeField]
+        private GameObject _cardPrefab;
         private void Awake()
         {
             if (GameCycleSingleton != null) Destroy(this);
@@ -137,6 +139,7 @@ namespace Cards
         }
         private IEnumerator GiveCard(PlayerSide player, Card newCard, HandPosition emptyHandPosition)
         {
+            InputOn = false;
             float time = 0;
             Vector3 startPos = newCard.transform.position;
             Vector3 endPos = emptyHandPosition.transform.position;
@@ -155,6 +158,7 @@ namespace Cards
             newCard.OnDragging += DraggingCard;
             newCard.OnDragEnd += DragEnd;
             emptyHandPosition.SetLinkedCard(newCard.GetComponent<Card>());
+            InputOn = true;
         }
         #endregion
         private void ChangeStartTurnMana(PlayerSide player)
@@ -183,7 +187,7 @@ namespace Cards
         }
         private void DragBegin(Card card)
         {
-            if (card.IsBeingMulliganned || !InputOn || card.Player != CurrentPlayer || ManaDict[card.Player].currentMana < card.GetCardPropertyData()._cost) return;
+            if (card.IsBeingMulliganned || !InputOn || card.Player != CurrentPlayer || (card.LinkedHandPosition != null && ManaDict[card.Player].currentMana < card.GetCardPropertyData()._cost) || (card.LinkedBoardPosition != null && !card.CanAttack)) return;
             _draggingCard = card.gameObject;
             _cardPositionBeforeDrag = card.transform.position;
         }
@@ -221,12 +225,12 @@ namespace Cards
                 {
                     Battlecry(card);
                 }
-                // card.PlayedEffect();
             }
             // Бьет ли в лицо
             else if (card.CanAttack && Physics.Raycast(card.transform.position, Vector3.down, out RaycastHit hitPlayer, 20, playerPortraitMask) && hitPlayer.collider.TryGetComponent(out PlayerPortrait playerPortrait) && card.Player != playerPortrait.Player)
             {
-                if (_boardDict[playerPortrait.Player].FirstOrDefault(board => board.LinkedCard.Taunt) != default)
+                // Если есть таунт
+                if (_boardDict[playerPortrait.Player].Where(boardPos=> boardPos.LinkedCard != null && boardPos.LinkedCard.Taunt).ToArray().Length > 0)
                 {
                     ReturnCard(card);
                     Debug.Log("there's taunt");
@@ -235,17 +239,16 @@ namespace Cards
                 else StartCoroutine(HitFaceAnimation(card, playerPortrait));
             }
             // Бьет ли вражескую карту
-            else if(Physics.Raycast(card.transform.position, Vector3.down, out RaycastHit hitBoardwEnemy, 20, boardPositionMask) && hitBoardwEnemy.collider.TryGetComponent(out BoardPosition boardPositionwEnemy) && card.Player != boardPositionwEnemy.Player && boardPositionwEnemy.LinkedCard != null && card.LinkedBoardPosition != null)
+            else if (Physics.Raycast(card.transform.position, Vector3.down, out RaycastHit hitBoardwEnemy, 20, boardPositionMask) && hitBoardwEnemy.collider.TryGetComponent(out BoardPosition boardPositionwEnemy) && card.Player != boardPositionwEnemy.Player && boardPositionwEnemy.LinkedCard != null && card.LinkedBoardPosition != null)
             {
-                int tauntSize = _boardDict[boardPositionwEnemy.Player].Where(boardPos => boardPos.LinkedCard.Taunt).ToArray().Length;
                 // Если эта карта не таунт и есть другие таунты
-                if (!boardPositionwEnemy.LinkedCard.Taunt && tauntSize > 0)
+                if (!boardPositionwEnemy.LinkedCard.Taunt && _boardDict[boardPositionwEnemy.Player].Where(boardPos => boardPos.LinkedCard != null && boardPos.LinkedCard.Taunt).ToArray().Length > 0)
                 {
                     ReturnCard(card);
                     Debug.Log("there's taunt");
                     //todo текст (анимация) что есть таунт
                 }
-                else StartCoroutine(HitEnemyAnimation(card, boardPositionwEnemy));
+                else  StartCoroutine(HitEnemyAnimation(card, boardPositionwEnemy));
             }
             else
             {

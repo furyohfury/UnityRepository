@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using static Cards.DecksManager;
 namespace Cards
 {
     public partial class GameCycleManager
@@ -14,34 +15,27 @@ namespace Cards
             {
                 case "Elven Archer":
                     {
-                        ResetClicked();
                         StartCoroutine(WaitForClickOnAnyone(card));
                     }
                     break;
                 case "Voodoo Doctor":
                     {
-                        ResetClicked();
                         StartCoroutine(WaitForClickOnAnyone(card));
                     }
                     break;
                 case "Murloc Tidehunter":
                     {
-                        HandPosition emptyHandPosition = _handsDict[card.Player].FirstOrDefault(pos => pos.LinkedCard == null);
-                        if (emptyHandPosition == default) return;
-                        //todo заспавнить мурвока
-
+                        SummonMinion(card, "Murloc Scout");
                     }
                     break;
                 case "Novice Engineer":
                     {
-                        ResetClicked();
                         GivePlayerACard(card.Player);
                     }
                     break;
                 case "Shattered Sun Cleric":
                     {
-                        ResetClicked();
-                        // StartCoroutine(WaitForClickOnSideMinion(card, true));
+                        StartCoroutine(WaitForClickSpecified(card, false, BattlecryTargets.Friendly));
                     }
                     break;
             }
@@ -49,6 +43,7 @@ namespace Cards
         }
         private IEnumerator WaitForClickOnAnyone(Card card)
         {
+            ResetClicked();
             Debug.Log("Waiting for click");
             InputOn = false;
             while (true)
@@ -56,7 +51,6 @@ namespace Cards
                 if (Input.GetMouseButtonDown(0))
                 {
                     LayerMask mask = LayerMask.GetMask("Board", "Player");
-                    // Vector3 v = 10 * (_camera.transform.position - _camera.ScreenToWorldPoint(Input.mousePosition));
                     Debug.Log("Shooting ray");
                     Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                     if (Physics.Raycast(ray, out RaycastHit hit, 1000, mask))
@@ -84,71 +78,85 @@ namespace Cards
             }
         }
 
-        private IEnumerator WaitForClickOnFriendlyOrEnemy(Card card, bool isFriendly)
+        private IEnumerator WaitForClickSpecified(Card card, bool withPlayer, BattlecryTargets target, CardUnitType type = CardUnitType.Common)
         {
-            yield return null;
-        }
-        private IEnumerator WaitForClickOnAnyMinion(Card card, CardUnitType type = CardUnitType.Common)
-        {
-            // ≈сть ли существа
-            bool thereAreMinions = false;
-            foreach (var boardPositions in _boardDict.Values)
-            {
-                if (boardPositions.FirstOrDefault(boardpos => boardpos.LinkedCard != null) != default) thereAreMinions = true;
-            }
-            if (!thereAreMinions) yield break;
+            ResetClicked();
+            if (!CheckForTargets(out List<BoardPosition> boardTargets, card, target, type)) yield break;
             Debug.Log("Waiting for click");
             InputOn = false;
             while (true)
             {
                 if (Input.GetMouseButtonDown(0))
                 {
-                    LayerMask mask = LayerMask.GetMask("Board");
-                    if (Physics.Raycast(_camera.ScreenToWorldPoint(Input.mousePosition), Vector3.down, out RaycastHit hit, 20, mask))
+                    LayerMask mask = LayerMask.GetMask("Board", "Player");
+                    Debug.Log("Shooting ray");
+                    Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                    if (Physics.Raycast(ray, out RaycastHit hit, 1000, mask))
                     {
                         Debug.Log("Clicked on mask");
-                        if (hit.collider.TryGetComponent(out BoardPosition boardPosition) && boardPosition.LinkedCard != null)
+                        // ≈сть ли кликнута€ BoardPosition в списке на проверку
+                        if (hit.collider.TryGetComponent(out BoardPosition boardPosition) && boardTargets.Contains(boardPosition))
                         {
                             _clickedBoardPosition = boardPosition;
+                            InputOn = true;
                             Debug.Log("Click Made on " + _clickedBoardPosition.gameObject.name);
-                            InputOn = true;
                             UnitAction(card);
                             yield break;
                         }
-                    }
-                    yield return null;
-                }
-            }
-        }
-        private IEnumerator WaitForClickOnSideMinion(Card card, bool isFriendly, CardUnitType type = CardUnitType.Common)
-        {
-            // ≈сть ли существа указанной стороны
-            bool thereAreMinions = false;
-            foreach (var boardPositions in _boardDict.Values)
-            {
-                if (isFriendly && boardPositions.FirstOrDefault(boardpos => boardpos.LinkedCard != null && boardpos.LinkedCard.Player == card.Player) != default) thereAreMinions = true;
-                if (!isFriendly && boardPositions.FirstOrDefault(boardpos => boardpos.LinkedCard != null && boardpos.LinkedCard.Player != card.Player) != default) thereAreMinions = true;
-            }
-            if (!thereAreMinions) yield break;
-
-            InputOn = false;
-            while (true)
-            {
-                if (Input.GetMouseButtonDown(0))
-                {
-                    LayerMask mask = LayerMask.GetMask("Board");
-                    if (Physics.Raycast(_camera.ScreenToWorldPoint(Input.mousePosition), Vector3.down, out RaycastHit hit, 20, mask))
-                    {
-                        if (hit.collider.TryGetComponent(out BoardPosition boardPosition) && boardPosition.LinkedCard != null && (isFriendly && boardPosition.LinkedCard.Player == card.Player || !isFriendly && boardPosition.LinkedCard.Player != card.Player))
+                        else if (withPlayer && hit.collider.TryGetComponent(out PlayerPortrait playerPortrait) && (target == BattlecryTargets.Friendly && playerPortrait.Player == card.Player || target == BattlecryTargets.Enemies && playerPortrait.Player != card.Player))
                         {
-                            _clickedBoardPosition = boardPosition;
+                            _clickedPlayer = playerPortrait;
                             InputOn = true;
+                            Debug.Log("Click Made on " + _clickedPlayer.gameObject.name);
                             UnitAction(card);
                             yield break;
                         }
                     }
-                    yield return null;
                 }
+                yield return null;
+            }
+
+        }
+        private bool CheckForTargets(out List<BoardPosition> boardTargets, Card card, BattlecryTargets target, CardUnitType type = CardUnitType.Common)
+        {
+            boardTargets = new();
+            switch (target)
+            {
+                case BattlecryTargets.Friendly:
+                    {
+                        // ≈сть хот€ бы одна дружественна€ карта с нужным типом если он задан
+                        foreach (var boardPositions in _boardDict.Values)
+                        {
+                            boardTargets.AddRange(boardPositions.Where(boardPos => boardPos.LinkedCard != null && boardPos.LinkedCard != card && boardPos.LinkedCard.Player == card.Player && (type == CardUnitType.Common || type == boardPos.LinkedCard.GetCardPropertyData()._type)).ToList());
+                        }
+                        if (boardTargets.Count > 0) return true;
+                        return false;
+                    }
+                case BattlecryTargets.Enemies:
+                    {
+                        // ≈сть хот€ бы одна вражеска€ карта с нужным типом если он задан
+                        foreach (var boardPositions in _boardDict.Values)
+                        {
+                            boardTargets.AddRange(boardPositions.Where(boardPos => boardPos.LinkedCard != null && boardPos.LinkedCard != card && boardPos.LinkedCard.Player != card.Player && (type == CardUnitType.Common || type == boardPos.LinkedCard.GetCardPropertyData()._type)).ToList());
+                        }
+                        if (boardTargets.Count > 0) return true;
+                        return false;
+                    }
+                case BattlecryTargets.All:
+                    {
+                        // ≈сть хот€ бы одна карта с нужным типом если он задан
+                        foreach (var boardPositions in _boardDict.Values)
+                        {
+                            boardTargets.AddRange(boardPositions.Where(boardPos => boardPos.LinkedCard != null && boardPos.LinkedCard != card && (type == CardUnitType.Common || type == boardPos.LinkedCard.GetCardPropertyData()._type)).ToList());
+                        }
+                        if (boardTargets.Count > 0) return true;
+                        return false;
+                    }
+                default:
+                    {
+                        boardTargets = null;
+                        return false;
+                    }
             }
         }
         private void UnitAction(Card card)
@@ -179,55 +187,28 @@ namespace Cards
                     break;
             }
         }
-        /* private IEnumerator WaitForClickOnFriendlyMinion(Card card)
+        private void SummonMinion(Card card, string summonName)
         {
-            // если есть дружественные 
-            if (_handsDict[card.Player].FirstOrDefault(handPos => handPos.LinkedCard != null) == default) yield break;
-            InputOn = false;
-            while (true)
+            BoardPosition emptyPosition = _boardDict[card.Player].FirstOrDefault(boardPos => boardPos.LinkedCard == null);
+            if (emptyPosition == default) return;
+            Vector3 position = new Vector3(emptyPosition.transform.position.x, _cardPrefab.transform.position.y, emptyPosition.transform.position.z);
+            GameObject summonCardGO = Instantiate(_cardPrefab, position, Quaternion.Euler(new Vector3(0, 0, 180)));
+            CardPropertyData summonData = Converting.ConvertToProperty(DeckManagerSingleton.AllCards.SingleOrDefault(minion => minion.Name == summonName));
+            Card summonCardComp = summonCardGO.GetComponent<Card>();
+            summonCardComp.SetCardDataAndVisuals(summonData);
+            // ѕрисвоение свойств карты
+            summonCardComp.Player = card.Player;
+            if (Charge.ChargeCards.Contains(summonCardComp.GetCardPropertyData()._name))
             {
-                if (Input.GetMouseButtonDown(0))
-                {
-                    LayerMask mask = LayerMask.GetMask("Board");
-                    if (Physics.Raycast(_camera.ScreenToWorldPoint(Input.mousePosition), Vector3.down, out RaycastHit hit, 20, mask))
-                    {
-                        if (hit.collider.TryGetComponent(out BoardPosition boardPosition) && boardPosition.LinkedCard != null && boardPosition.LinkedCard.Player == card.Player)
-                        {
-                            _clickedBoardPosition = boardPosition;
-                            InputOn = true;
-                            UnitAction(card);
-                            yield break;
-                        }
-                    }
-                    yield return null;
-                }
+                summonCardComp.Charge = true;
+                summonCardComp.CanAttack = true;
             }
+            if (Taunt.TauntCards.Contains(summonCardComp.GetCardPropertyData()._name)) summonCardComp.Taunt = true;
+            summonCardGO.name = summonCardComp.GetCardPropertyData()._name;
+            // ѕрив€зка к позиции
+            emptyPosition.SetLinkedCard(summonCardComp);
+            summonCardComp.SetLinkedBoardPosition(emptyPosition);
         }
-        private IEnumerator WaitForClickOnType(Card card, CardUnitType type, bool isFriendly = true)
-        {
-            // если есть дружественные такого типа
-            if (isFriendly && _handsDict[card.Player].FirstOrDefault(handPos => handPos.LinkedCard != null && handPos.LinkedCard.GetCardPropertyData()._type == type) == default) yield break;
-            if (_handsDict[card.Player].FirstOrDefault(handPos => handPos.LinkedCard != null && handPos.LinkedCard.GetCardPropertyData()._type == type) == default) yield break;
-            InputOn = false;
-            while (true)
-            {
-                if (Input.GetMouseButtonDown(0))
-                {
-                    LayerMask mask = LayerMask.GetMask("Board");
-                    if (Physics.Raycast(_camera.ScreenToWorldPoint(Input.mousePosition), Vector3.down, out RaycastHit hit, 20, mask))
-                    {
-                        if (hit.collider.TryGetComponent(out BoardPosition boardPosition) && boardPosition.LinkedCard != null && boardPosition.LinkedCard.Player == card.Player)
-                        {
-                            _clickedBoardPosition = boardPosition;
-                            InputOn = true;
-                            UnitAction(card);
-                            yield break;
-                        }
-                    }
-                    yield return null;
-                }
-            }
-        } */
         private void ResetClicked()
         {
             _clickedBoardPosition = null;

@@ -33,4 +33,10 @@ namespace Cards
         Battlecry = 2,
         Unique = 100
     }
+    public enum BattlecryTargets : byte
+    {
+        Friendly = 0,
+        Enemies = 1,
+        All = 2
+    }
 }

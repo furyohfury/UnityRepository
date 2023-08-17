@@ -436,13 +436,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _playerOneCardNames:
   - Elven Archer
-  - Elven Archer
-  - Novice Engineer
-  - Elven Archer
-  - Novice Engineer
-  - Shattered Sun Cleric
-  - Shattered Sun Cleric
-  - Shattered Sun Cleric
+  - Murloc Tidehunter
+  - Murloc Tidehunter
+  - Murloc Tidehunter
+  - Murloc Tidehunter
+  - Murloc Tidehunter
+  - Murloc Tidehunter
+  - Murloc Tidehunter
   - Elven Archer
   - Shattered Sun Cleric
   _playerTwoCardNames:
@@ -492,6 +492,7 @@ MonoBehaviour:
   _timeForCameraMove: 2
   _manaText: {fileID: 1744707207}
   _board: {fileID: 1276154431}
+  _cardPrefab: {fileID: 1307249474124220039, guid: 1efffdaff08b40c44aa84086651f4a25, type: 3}
 --- !u!1 &487833938
 GameObject:
   m_ObjectHideFlags: 0

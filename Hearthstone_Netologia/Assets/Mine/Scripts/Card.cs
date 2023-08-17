@@ -10,6 +10,7 @@ namespace Cards
 {
     public class Card : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
+        [field: SerializeField]
         public PlayerSide Player { get; set; }
         protected static GameObject _draggingCard;
         private Camera _camera;
@@ -154,6 +155,7 @@ namespace Cards
         public void ChangeAttack(int delta)
         {
             _cardData._attack += delta;
+            _attack.text = _cardData._attack + "";
         }
         public void ChangeHP(int delta, bool isHealing = false)
         {
@@ -167,6 +169,7 @@ namespace Cards
                 _cardData._health += delta;
                 _maxHP += delta;
             }
+            _health.text = _cardData._health + "";
             
         }
         public void BeingMulliganed(bool mulliganed)
