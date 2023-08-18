@@ -39,6 +39,8 @@ namespace Cards
         public HandPosition LinkedHandPosition { get; private set; }
         public bool Charge { get; set; } = false;
         public bool Taunt { get; set; } = false;
+        public List<Effect> Effects { get; private set; } = new();
+        // public Dictionary<Effect, bool>
         private void Awake()
         {
             // _camera = Camera.main;
@@ -184,6 +186,14 @@ namespace Cards
         {
             LinkedHandPosition = handPosition;
         }
+        public void AddEffect(Effect effect)
+        {
+            Effects.Add(effect);
+        }
+        public void RemoveEffect(Effect effect)
+        {
+            Effects.Remove(effect);
+        } 
         /* private IEnumerator HitFaceAnimation(PlayerPortrait playerPortrait)
         {
             float time = 0;

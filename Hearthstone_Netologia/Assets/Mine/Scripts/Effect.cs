@@ -1,63 +1,96 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static Cards.GameCycleManager;
 
 namespace Cards
 {
     public class Effect
     {
-        public Card SourceCard { get; private set; }
+        public Card SourceCard { get; set; }
+        public List<BoardPosition> Targets { get; private set; }
         public Effect(Card sourceCard)
         {
             SourceCard = sourceCard;
-        }
-        public void SetEffect(Card sourceCard, Card targetCard)
-        {
-            switch (sourceCard.GetCardPropertyData()._name)
+            // Поиск целей
+            switch (SourceCard.GetCardPropertyData()._name)
             {
                 case "Raid Leader":
                     {
-                        if (targetCard.Player == sourceCard.Player)
+                        Targets = GameCycleSingleton.BoardDict[sourceCard.Player];
+                    }
+                    break;
+                case "Stormwind Champion":
+                    {
+                        Targets = GameCycleSingleton.BoardDict[sourceCard.Player];
+                    }
+                    break;
+            }
+        }
+        
+        public void ApplyEffect()
+        {
+            switch (SourceCard.GetCardPropertyData()._name)
+            {
+                case "Raid Leader":
+                    {
+                        foreach(var boardPos in Targets)
                         {
-                            targetCard.ChangeAttack(1);
+                            if (boardPos.LinkedCard == null || boardPos.LinkedCard == SourceCard || boardPos.LinkedCard.Effects.Contains(this)) return;
+                            boardPos.LinkedCard.ChangeAttack(1);
+                            AddEffectToCardComp(boardPos.LinkedCard);
                         }
                     }
                     break;
                 case "Stormwind Champion":
                     {
-                        if (targetCard.Player == sourceCard.Player)
+                        foreach (var boardPos in Targets)
                         {
-                            targetCard.ChangeAttack(1);
-                            targetCard.ChangeHP(1);
+                            if (boardPos.LinkedCard == null || boardPos.LinkedCard == SourceCard || boardPos.LinkedCard.Effects.Contains(this)) return;
+                            boardPos.LinkedCard.ChangeAttack(1);
+                            boardPos.LinkedCard.ChangeHP(1);
+                            AddEffectToCardComp(boardPos.LinkedCard);
                         }
                     }
                     break;
             }
         }
 
-        public void RemoveEffect(Card targetCard, Card sourceCard)
+        public void RemoveEffect()
         {
-            switch (sourceCard.GetCardPropertyData()._name)
+            switch (SourceCard.GetCardPropertyData()._name)
             {
                 case "Raid Leader":
                     {
-                        if (targetCard.Player == sourceCard.Player)
+                        foreach(var boardPos in Targets)
                         {
-                            targetCard.ChangeAttack(-1);
+                            if (boardPos.LinkedCard == null || boardPos.LinkedCard == SourceCard) return;
+                            boardPos.LinkedCard.ChangeAttack(-1);
+                            AddEffectToCardComp(boardPos.LinkedCard);
                         }
                     }
                     break;
                 case "Stormwind Champion":
                     {
-                        if (targetCard.Player == sourceCard.Player)
+                        foreach (var boardPos in Targets)
                         {
-                            targetCard.ChangeAttack(-1);
-                            if (targetCard.GetCardPropertyData()._health - 1 > 0) targetCard.ChangeHP(-1);
+                            if (boardPos.LinkedCard == null || boardPos.LinkedCard == SourceCard) return;
+                            boardPos.LinkedCard.ChangeAttack(-1);
+                            if (boardPos.LinkedCard.GetCardPropertyData()._health - 1 > 0) boardPos.LinkedCard.ChangeHP(-1);
+                            RemoveEffectsFromCardComp(boardPos.LinkedCard);
                         }
                     }
                     break;
             }
         }       
+        private void AddEffectToCardComp(Card card)
+        {
+            card.AddEffect(this);
+        }
+        private void RemoveEffectsFromCardComp(Card card)
+        {
+            card.RemoveEffect(this);
+        }
     /* private void PlayPassiveEffects(Card card)
     {
         switch (card.GetCardPropertyData()._name)

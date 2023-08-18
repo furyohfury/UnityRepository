@@ -136,7 +136,7 @@ namespace Cards
                 case Targets.Friendly:
                     {
                         // Есть хотя бы одна дружественная карта с нужным типом если он задан
-                        foreach (var boardPositions in _boardDict.Values)
+                        foreach (var boardPositions in BoardDict.Values)
                         {
                             boardTargets.AddRange(boardPositions.Where(boardPos => boardPos.LinkedCard != null && boardPos.LinkedCard != card && boardPos.LinkedCard.Player == card.Player && (type == CardUnitType.Common || type == boardPos.LinkedCard.GetCardPropertyData()._type)).ToList());
                         }
@@ -146,7 +146,7 @@ namespace Cards
                 case Targets.Enemies:
                     {
                         // Есть хотя бы одна вражеская карта с нужным типом если он задан
-                        foreach (var boardPositions in _boardDict.Values)
+                        foreach (var boardPositions in BoardDict.Values)
                         {
                             boardTargets.AddRange(boardPositions.Where(boardPos => boardPos.LinkedCard != null && boardPos.LinkedCard != card && boardPos.LinkedCard.Player != card.Player && (type == CardUnitType.Common || type == boardPos.LinkedCard.GetCardPropertyData()._type)).ToList());
                         }
@@ -156,7 +156,7 @@ namespace Cards
                 case Targets.All:
                     {
                         // Есть хотя бы одна карта с нужным типом если он задан
-                        foreach (var boardPositions in _boardDict.Values)
+                        foreach (var boardPositions in BoardDict.Values)
                         {
                             boardTargets.AddRange(boardPositions.Where(boardPos => boardPos.LinkedCard != null && boardPos.LinkedCard != card && (type == CardUnitType.Common || type == boardPos.LinkedCard.GetCardPropertyData()._type)).ToList());
                         }
@@ -200,7 +200,7 @@ namespace Cards
         }
         private void SummonMinion(Card card, string summonName)
         {
-            BoardPosition emptyPosition = _boardDict[card.Player].FirstOrDefault(boardPos => boardPos.LinkedCard == null);
+            BoardPosition emptyPosition = BoardDict[card.Player].FirstOrDefault(boardPos => boardPos.LinkedCard == null);
             if (emptyPosition == default) return;
             Vector3 position = new Vector3(emptyPosition.transform.position.x, _cardPrefab.transform.position.y, emptyPosition.transform.position.z);
             GameObject summonCardGO = Instantiate(_cardPrefab, position, Quaternion.Euler(new Vector3(0, 0, 180)));

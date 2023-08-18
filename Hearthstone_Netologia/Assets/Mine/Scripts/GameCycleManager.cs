@@ -20,8 +20,8 @@ namespace Cards
         [SerializeField]
         private float _timeForCameraMove = 2;
         public float TimeToMove { get; private set; } = 1;
-        private Dictionary<PlayerSide, List<HandPosition>> _handsDict = new();
-        private Dictionary<PlayerSide, List<BoardPosition>> _boardDict = new();
+        public Dictionary<PlayerSide, List<HandPosition>> HandsDict { get; private set; } = new();
+        public Dictionary<PlayerSide, List<BoardPosition>> BoardDict { get; private set; } = new();
         private Dictionary<PlayerSide, Deck> _decksDict = new();
         private int _numberOfPlayers;
         // private (PlayerSide player, uint currentMana, uint maxMana) _manaData = (PlayerSide.One, 1, 1);
@@ -38,6 +38,7 @@ namespace Cards
         private GameObject _cardPrefab;
         private Dictionary<PlayerSide, int> _fatigueDict = new();
         private Dictionary<PlayerSide, PlayerPortrait> _playerPortraitsDict = new();
+        public Dictionary<Card, Effect> EffectsList = new();
         private void Awake()
         {
             if (GameCycleSingleton != null) Destroy(this);
@@ -65,7 +66,7 @@ namespace Cards
             }
             SetupHandsBoardDecksDictionaries();
             // Подписка на перемещение карт
-            foreach (var hands in _handsDict.Values)
+            foreach (var hands in HandsDict.Values)
             {
                 foreach (var hand in hands)
                 {
@@ -84,12 +85,12 @@ namespace Cards
             ChangeCurrentPlayerAndCardsVisibility();
             StartCoroutine(CameraMovementAndGivingCardStart());
             ChangeStartTurnMana(CurrentPlayer);
-            EnableCardsOnBoardToAttack();
+            EnableCardsOnBoardToAttack();            
         }
         private void ChangeCurrentPlayerAndCardsVisibility()
         {
             // Скрытие карт текущего игрока
-            foreach (var handPosition in _handsDict[CurrentPlayer])
+            foreach (var handPosition in HandsDict[CurrentPlayer])
             {
                 if (handPosition.LinkedCard != null) handPosition.LinkedCard.transform.eulerAngles = new Vector3(0, 0, 0);
             }
@@ -97,7 +98,7 @@ namespace Cards
             if ((int)CurrentPlayer + 1 < Enum.GetNames(typeof(PlayerSide)).Length) ++CurrentPlayer;
             else CurrentPlayer = 0;
             // Открытие карт нового игрока
-            foreach (var handPosition in _handsDict[CurrentPlayer])
+            foreach (var handPosition in HandsDict[CurrentPlayer])
             {
                 if (handPosition.LinkedCard != null) handPosition.LinkedCard.transform.eulerAngles = new Vector3(0, 0, 180);
             }
@@ -150,7 +151,7 @@ namespace Cards
             var newCard = DeckManagerSingleton.GetRandomCardFromDeck(player);
             Card newCardComp = newCard.GetComponent<Card>();
             //Нахождение пустого места
-            HandPosition emptyHandPosition = _handsDict[player].FirstOrDefault(pos => pos.LinkedCard == null);
+            HandPosition emptyHandPosition = HandsDict[player].FirstOrDefault(pos => pos.LinkedCard == null);
             if (emptyHandPosition == default) return;
             StartCoroutine(GiveCard(player, newCardComp, emptyHandPosition));
         }
@@ -195,7 +196,7 @@ namespace Cards
         }
         private void EnableCardsOnBoardToAttack()
         {
-            foreach (var boardPositions in _boardDict.Values)
+            foreach (var boardPositions in BoardDict.Values)
             {
                 foreach (var boardPosition in boardPositions)
                 {
@@ -208,11 +209,11 @@ namespace Cards
             // Переворот всех карт 
             for (int i = 0; i < 2; i++)
             {
-                foreach (var handPos in _handsDict[(PlayerSide)i])
+                foreach (var handPos in HandsDict[(PlayerSide)i])
                 {
                     if (handPos.LinkedCard != null) handPos.LinkedCard.transform.eulerAngles = (CurrentPlayer == PlayerSide.One) ? new Vector3(handPos.LinkedCard.transform.eulerAngles.x, 0, handPos.LinkedCard.transform.eulerAngles.z) : new Vector3(handPos.LinkedCard.transform.eulerAngles.x, 180, handPos.LinkedCard.transform.eulerAngles.z);
                 }
-                foreach (var boardPos in _boardDict[(PlayerSide)i])
+                foreach (var boardPos in BoardDict[(PlayerSide)i])
                 {
                     if (boardPos.LinkedCard != null) boardPos.LinkedCard.transform.eulerAngles = (CurrentPlayer == PlayerSide.One) ? new Vector3(boardPos.LinkedCard.transform.eulerAngles.x, 0, boardPos.LinkedCard.transform.eulerAngles.z) : new Vector3(boardPos.LinkedCard.transform.eulerAngles.x, 180, boardPos.LinkedCard.transform.eulerAngles.z);
                 }
@@ -264,14 +265,15 @@ namespace Cards
                 // Чек на пассивные эффекты
                 if (PassiveList.PassiveEfectCards.Contains(card.GetCardPropertyData()._name))
                 {
-                    //todo
+                    CheckForEffects(card);
                 }
+                ApplyAllEffects();
             }
             // Бьет ли в лицо
             else if (card.CanAttack && Physics.Raycast(card.transform.position, Vector3.down, out RaycastHit hitPlayer, 20, playerPortraitMask) && hitPlayer.collider.TryGetComponent(out PlayerPortrait playerPortrait) && card.Player != playerPortrait.Player)
             {
                 // Если есть таунт
-                if (_boardDict[playerPortrait.Player].Where(boardPos => boardPos.LinkedCard != null && boardPos.LinkedCard.Taunt).ToArray().Length > 0)
+                if (BoardDict[playerPortrait.Player].Where(boardPos => boardPos.LinkedCard != null && boardPos.LinkedCard.Taunt).ToArray().Length > 0)
                 {
                     ReturnCard(card);
                     Debug.Log("there's taunt");
@@ -283,7 +285,7 @@ namespace Cards
             else if (Physics.Raycast(card.transform.position, Vector3.down, out RaycastHit hitBoardwEnemy, 20, boardPositionMask) && hitBoardwEnemy.collider.TryGetComponent(out BoardPosition boardPositionwEnemy) && card.Player != boardPositionwEnemy.Player && boardPositionwEnemy.LinkedCard != null && card.LinkedBoardPosition != null)
             {
                 // Если эта карта не таунт и есть другие таунты
-                if (!boardPositionwEnemy.LinkedCard.Taunt && _boardDict[boardPositionwEnemy.Player].Where(boardPos => boardPos.LinkedCard != null && boardPos.LinkedCard.Taunt).ToArray().Length > 0)
+                if (!boardPositionwEnemy.LinkedCard.Taunt && BoardDict[boardPositionwEnemy.Player].Where(boardPos => boardPos.LinkedCard != null && boardPos.LinkedCard.Taunt).ToArray().Length > 0)
                 {
                     ReturnCard(card);
                     Debug.Log("there's taunt");
@@ -303,6 +305,30 @@ namespace Cards
         {
             card.transform.position = _cardPositionBeforeDrag;
         }
+        private void CheckForEffects(Card card)
+        {
+            if (PassiveList.PassiveEfectCards.Contains(card.GetCardPropertyData()._name))
+            {
+                Effect effect = new(card);
+                EffectsList.Add(card, effect);
+                /* foreach(var boardPos in effect.Targets)
+                {
+                    if (boardPos.LinkedCard != null)
+                    {
+                        boardPos.LinkedCard.AddEffect(effect);
+                        effect.ApplyEffect(boardPos.LinkedCard);
+                    }
+                } */
+                effect.ApplyEffect();
+            }
+        }
+        private void ApplyAllEffects()
+        {
+            foreach (var effect in EffectsList.Values)
+            {
+                effect.ApplyEffect();
+            }
+        }       
 
         private IEnumerator HitFaceAnimation(Card card, PlayerPortrait playerPortrait)
         {
@@ -371,9 +397,10 @@ namespace Cards
                 card.OnDragging -= DraggingCard;
                 card.OnDragEnd -= DragEnd;
                 // Чек на пассивные эффекты
-                if (PassiveList.PassiveEfectCards.Contains(card.GetCardPropertyData()._name))
+                if (EffectsList.Keys.Contains(card))
                 {
-                    //todo
+                    EffectsList[card].RemoveEffect();
+                    EffectsList.Remove(card);
                 }
                 Destroy(card.gameObject);
             }
@@ -390,7 +417,7 @@ namespace Cards
                 {
                     handPositions.Add(handPos);
                 }
-                _handsDict.Add((PlayerSide)i, handPositions);
+                HandsDict.Add((PlayerSide)i, handPositions);
             }
             // Добавление в словарь BoardPositions)))))))))))))
             var allBoardPositions = FindObjectsOfType<BoardPosition>();
@@ -401,7 +428,7 @@ namespace Cards
                 {
                     boardPositions.Add(boardPos);
                 }
-                _boardDict.Add((PlayerSide)i, boardPositions);
+                BoardDict.Add((PlayerSide)i, boardPositions);
             }
             var allDecks = FindObjectsOfType<Deck>();
             for (int i = 0; i < _numberOfPlayers; i++)
