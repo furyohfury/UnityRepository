@@ -25,7 +25,7 @@ namespace Cards
                     break;
                 case "Murloc Tidehunter":
                     {
-                        SummonMinion(card, "Murloc Scout");
+                        UnitAction(card);                        
                     }
                     break;
                 case "Novice Engineer":
@@ -40,12 +40,11 @@ namespace Cards
                     break;
                 case "Frostwolf Warlord":
                     {
-                        //todo +1 +1 за каждого союзного миньона
+                        UnitAction(card);
                     }
                     break;
                 case "Houndmaster":
                     {
-                        //todo +2 +2 своему бисту
                         StartCoroutine(WaitForClickSpecified(card, false, Targets.Friendly, CardUnitType.Beast));
                     }
                     break;
@@ -196,14 +195,33 @@ namespace Cards
                         _clickedBoardPosition.LinkedCard.ChangeAttack(1);
                     }
                     break;
+                case "Houndmaster":
+                    {
+                        _clickedBoardPosition.LinkedCard.ChangeAttack(2);
+                        _clickedBoardPosition.LinkedCard.ChangeHP(2);
+                    }
+                    break;
+                case "Murloc Tidehunter":
+                    {
+                        SummonMinion(card, "Murloc Scout");
+                    }
+                    break;
+                case "Frostwolf Warlord":
+                    {
+                        CheckForTargets(out List<BoardPosition> boardPositions, card, Targets.Friendly);
+                        card.ChangeAttack(boardPositions.Count);
+                        card.ChangeHP(boardPositions.Count);
+                    }
+                    break;
             }
         }
         private void SummonMinion(Card card, string summonName)
         {
+            // Поиск свободного места
             BoardPosition emptyPosition = BoardDict[card.Player].FirstOrDefault(boardPos => boardPos.LinkedCard == null);
             if (emptyPosition == default) return;
             Vector3 position = new Vector3(emptyPosition.transform.position.x, _cardPrefab.transform.position.y, emptyPosition.transform.position.z);
-            GameObject summonCardGO = Instantiate(_cardPrefab, position, Quaternion.Euler(new Vector3(0, 0, 180)));
+            GameObject summonCardGO = card.Player == PlayerSide.One ? Instantiate(_cardPrefab, position, Quaternion.Euler(new Vector3(0, 0, 180))) : Instantiate(_cardPrefab, position, Quaternion.Euler(new Vector3(0, 180, 180)));
             CardPropertyData summonData = Converting.ConvertToProperty(DeckManagerSingleton.AllCards.SingleOrDefault(minion => minion.Name == summonName));
             Card summonCardComp = summonCardGO.GetComponent<Card>();
             summonCardComp.SetCardDataAndVisuals(summonData);
@@ -219,6 +237,10 @@ namespace Cards
             // Привязка к позиции
             emptyPosition.SetLinkedCard(summonCardComp);
             summonCardComp.SetLinkedBoardPosition(emptyPosition);
+            // Подписка на ивенты 
+            summonCardComp.OnDragBegin += DragBegin;
+            summonCardComp.OnDragging += DraggingCard;
+            summonCardComp.OnDragEnd += DragEnd;
         }
         private void ResetClicked()
         {

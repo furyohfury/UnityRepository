@@ -39,6 +39,7 @@ namespace Cards
         public HandPosition LinkedHandPosition { get; private set; }
         public bool Charge { get; set; } = false;
         public bool Taunt { get; set; } = false;
+        [field :SerializeField]
         public List<Effect> Effects { get; private set; } = new();
         // public Dictionary<Effect, bool>
         private void Awake()
@@ -93,7 +94,6 @@ namespace Cards
             // Бьет ли в лицо
             else if (CanAttack && Physics.Raycast(transform.position, Vector3.down, out RaycastHit hitPlayer, 20, playerPortraitMask) && hitPlayer.collider.TryGetComponent(out PlayerPortrait playerPortrait) && Player != playerPortrait.Player)
             {
-                //todo проверка на таунт
                 StartCoroutine(HitFaceAnimation(playerPortrait));
             }
             else
@@ -107,7 +107,7 @@ namespace Cards
         }
         public void OnPointerEnter(PointerEventData eventData)
         {
-            //todo через анимацию требование
+            //todo через анимацию обязательное требование
             if (IsBeingMulliganned) return;
             gameObject.transform.localScale *= 1.2f;
         }

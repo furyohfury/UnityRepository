@@ -74,19 +74,6 @@ namespace Cards
 #endif
             return _uncollectibleIds.Contains(id);
         }
-        /* public static CardPropertyData ConvertToProperty(CardPropertiesData data)
-        {
-            CardPropertyData converted = new();
-            converted._cost = data.Cost;
-            converted._image = data.Texture;
-            converted._name = data.Name;
-            if (data.Type == CardUnitType.Common) converted._description = CardUtility.GetCommonDescriptionById(data.Id);
-            else converted._description = ClassCardUtility.GetClassDescriptionById(data.Id);
-            converted._attack = data.Attack;
-            converted._health = data.Health;
-            converted._type = data.Type;
-            return converted;
-        } */
     }
     public static class ClassCardUtility
     {

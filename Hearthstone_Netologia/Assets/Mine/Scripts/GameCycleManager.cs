@@ -145,7 +145,7 @@ namespace Cards
             {
                 // Fatigue
                 _playerPortraitsDict[player].ChangePlayerHealth(-_fatigueDict[player]++);
-                RotatingCards();
+                RotatingCardsAndPlayerHp();
                 return;
             }
             var newCard = DeckManagerSingleton.GetRandomCardFromDeck(player);
@@ -176,7 +176,7 @@ namespace Cards
             newCard.OnDragging += DraggingCard;
             newCard.OnDragEnd += DragEnd;
             emptyHandPosition.SetLinkedCard(newCard.GetComponent<Card>());
-            RotatingCards();
+            RotatingCardsAndPlayerHp();
             InputOn = true;
         }
 
@@ -204,7 +204,7 @@ namespace Cards
                 }
             }
         }
-        private void RotatingCards()
+        private void RotatingCardsAndPlayerHp()
         {
             // Переворот всех карт 
             for (int i = 0; i < 2; i++)
@@ -267,6 +267,7 @@ namespace Cards
                 {
                     CheckForEffects(card);
                 }
+                // Применение всех эффектов
                 ApplyAllEffects();
             }
             // Бьет ли в лицо

@@ -36,7 +36,7 @@ namespace Cards
                     {
                         foreach(var boardPos in Targets)
                         {
-                            if (boardPos.LinkedCard == null || boardPos.LinkedCard == SourceCard || boardPos.LinkedCard.Effects.Contains(this)) return;
+                            if (boardPos.LinkedCard == null || boardPos.LinkedCard == SourceCard || boardPos.LinkedCard.Effects.Contains(this)) continue;
                             boardPos.LinkedCard.ChangeAttack(1);
                             AddEffectToCardComp(boardPos.LinkedCard);
                         }
@@ -46,7 +46,7 @@ namespace Cards
                     {
                         foreach (var boardPos in Targets)
                         {
-                            if (boardPos.LinkedCard == null || boardPos.LinkedCard == SourceCard || boardPos.LinkedCard.Effects.Contains(this)) return;
+                            if (boardPos.LinkedCard == null || boardPos.LinkedCard == SourceCard || boardPos.LinkedCard.Effects.Contains(this)) continue;
                             boardPos.LinkedCard.ChangeAttack(1);
                             boardPos.LinkedCard.ChangeHP(1);
                             AddEffectToCardComp(boardPos.LinkedCard);
@@ -64,9 +64,9 @@ namespace Cards
                     {
                         foreach(var boardPos in Targets)
                         {
-                            if (boardPos.LinkedCard == null || boardPos.LinkedCard == SourceCard) return;
+                            if (boardPos.LinkedCard == null || boardPos.LinkedCard == SourceCard) continue;
                             boardPos.LinkedCard.ChangeAttack(-1);
-                            AddEffectToCardComp(boardPos.LinkedCard);
+                            RemoveEffectsFromCardComp(boardPos.LinkedCard);
                         }
                     }
                     break;
@@ -74,7 +74,7 @@ namespace Cards
                     {
                         foreach (var boardPos in Targets)
                         {
-                            if (boardPos.LinkedCard == null || boardPos.LinkedCard == SourceCard) return;
+                            if (boardPos.LinkedCard == null || boardPos.LinkedCard == SourceCard) continue;
                             boardPos.LinkedCard.ChangeAttack(-1);
                             if (boardPos.LinkedCard.GetCardPropertyData()._health - 1 > 0) boardPos.LinkedCard.ChangeHP(-1);
                             RemoveEffectsFromCardComp(boardPos.LinkedCard);

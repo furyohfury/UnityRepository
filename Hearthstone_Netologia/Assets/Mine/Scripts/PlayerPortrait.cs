@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using TMPro;
 
 namespace Cards
 {
@@ -14,17 +15,14 @@ namespace Cards
         [field : SerializeField]
         public int Health { get; private set; } = 10;
         private int _maxHP;
+        [SerializeField]
+        private TextMeshPro _hpText;
         // Start is called before the first frame update
         void Start()
         {
             Health = 10;
             _maxHP = 10;
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-
+            _hpText.text = _maxHP + "";
         }
         public void ChangePlayerHealth(int delta, bool isHealing = true)
         {
@@ -38,6 +36,7 @@ namespace Cards
                 Health += delta;
                 _maxHP += delta;
             }
+            _hpText.text = Health + "";
             if (Health <= 0)
             {
                 //todo анимация взрыв портрета героя и победа
