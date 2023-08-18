@@ -53,7 +53,7 @@ namespace Cards
             _endTurnButton.OnEndTurn -= EndTurn;
         }
         private void Start()
-        {
+        {            
             _numberOfPlayers = Enum.GetNames(typeof(PlayerSide)).Length;
             // Дефолт мана
             ManaDict.Add(PlayerSide.One, (1, 1));
@@ -64,6 +64,7 @@ namespace Cards
                 _fatigueDict.Add((PlayerSide)i, 0);
                 _playerPortraitsDict.Add((PlayerSide)i, FindObjectsOfType<PlayerPortrait>().Single(portrait => portrait.Player == (PlayerSide)i));
             }
+            SettingHeroes();
             SetupHandsBoardDecksDictionaries();
             // Подписка на перемещение карт
             foreach (var hands in HandsDict.Values)
@@ -79,13 +80,57 @@ namespace Cards
                 }
             }
         }
+        private void SettingHeroes()
+        {
+            for (int i = 0; i < 2; i++)
+            {
+                string heroName = (PlayerSide)i == PlayerSide.One ? PlayerPrefs.GetString("PlayerOneHero") : PlayerPrefs.GetString("PlayerTwoHero");
+                Texture heroTexture = (Texture)Resources.Load("/Heroes/" + heroName + ".png");
+                MeshRenderer mesh = _playerPortraitsDict[(PlayerSide) i].gameObject.GetComponent<MeshRenderer>();
+                mesh.material.mainTexture = heroTexture;
+                mesh.material.mainTextureScale = new Vector2(1, 1);
+            }
+            Texture test = (Texture)Resources.Load("/Heroes/" + "Mage");
+            _playerPortraitsDict[PlayerSide.One].gameObject.GetComponent<MeshRenderer>().material.mainTexture = test;
+            _playerPortraitsDict[PlayerSide.One].gameObject.GetComponent<MeshRenderer>().material.mainTextureScale = new Vector2(1, 1);
+        }
+        private void SetupHandsBoardDecksDictionaries()
+        {
+            // Добавление в словарь HandPositions (зачем так сложно непонятно делал бы для двух не парился)
+            var allHandPositions = FindObjectsOfType<HandPosition>();
+            for (int i = 0; i < _numberOfPlayers; i++)
+            {
+                List<HandPosition> handPositions = new();
+                foreach (var handPos in allHandPositions.Where(handP => (int)handP.Player == i).OrderBy(handP => handP.gameObject.name))
+                {
+                    handPositions.Add(handPos);
+                }
+                HandsDict.Add((PlayerSide)i, handPositions);
+            }
+            // Добавление в словарь BoardPositions)))))))))))))
+            var allBoardPositions = FindObjectsOfType<BoardPosition>();
+            for (int i = 0; i < _numberOfPlayers; i++)
+            {
+                List<BoardPosition> boardPositions = new();
+                foreach (var boardPos in allBoardPositions.Where((boardP) => (int)boardP.Player == i).OrderBy(handP => handP.gameObject.name))
+                {
+                    boardPositions.Add(boardPos);
+                }
+                BoardDict.Add((PlayerSide)i, boardPositions);
+            }
+            var allDecks = FindObjectsOfType<Deck>();
+            for (int i = 0; i < _numberOfPlayers; i++)
+            {
+                _decksDict.Add((PlayerSide)i, allDecks.Single((deck) => (int)deck.Player == i));
+            }
+        }
         #region EndTurnPressed
         private void EndTurn()
         {
             ChangeCurrentPlayerAndCardsVisibility();
             StartCoroutine(CameraMovementAndGivingCardStart());
             ChangeStartTurnMana(CurrentPlayer);
-            EnableCardsOnBoardToAttack();            
+            EnableCardsOnBoardToAttack();
         }
         private void ChangeCurrentPlayerAndCardsVisibility()
         {
@@ -329,7 +374,7 @@ namespace Cards
             {
                 effect.ApplyEffect();
             }
-        }       
+        }
 
         private IEnumerator HitFaceAnimation(Card card, PlayerPortrait playerPortrait)
         {
@@ -407,35 +452,6 @@ namespace Cards
             }
         }
         #endregion
-        private void SetupHandsBoardDecksDictionaries()
-        {
-            // Добавление в словарь HandPositions (зачем так сложно непонятно делал бы для двух не парился)
-            var allHandPositions = FindObjectsOfType<HandPosition>();
-            for (int i = 0; i < _numberOfPlayers; i++)
-            {
-                List<HandPosition> handPositions = new();
-                foreach (var handPos in allHandPositions.Where(handP => (int)handP.Player == i).OrderBy(handP => handP.gameObject.name))
-                {
-                    handPositions.Add(handPos);
-                }
-                HandsDict.Add((PlayerSide)i, handPositions);
-            }
-            // Добавление в словарь BoardPositions)))))))))))))
-            var allBoardPositions = FindObjectsOfType<BoardPosition>();
-            for (int i = 0; i < _numberOfPlayers; i++)
-            {
-                List<BoardPosition> boardPositions = new();
-                foreach (var boardPos in allBoardPositions.Where((boardP) => (int)boardP.Player == i).OrderBy(handP => handP.gameObject.name))
-                {
-                    boardPositions.Add(boardPos);
-                }
-                BoardDict.Add((PlayerSide)i, boardPositions);
-            }
-            var allDecks = FindObjectsOfType<Deck>();
-            for (int i = 0; i < _numberOfPlayers; i++)
-            {
-                _decksDict.Add((PlayerSide)i, allDecks.Single((deck) => (int)deck.Player == i));
-            }
-        }
+
     }
 }

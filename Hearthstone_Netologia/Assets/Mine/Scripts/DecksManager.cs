@@ -20,10 +20,7 @@ namespace Cards
         private Deck _playerTwoDeck;
         // private Dictionary<PlayerSide, Deck> _decksDict = new();
         private string _pathToPacks = "Cards";
-        private CardPackConfiguration[] _packs;
         public List<CardPropertiesData> AllCards { get; private set; } = new();
-        // private List<CardPropertiesData> _commonCards = new();
-        // private List<CardPropertiesData> _classCards = new();
         [SerializeField]
         private GameObject _cardPrefab;
 
@@ -31,8 +28,9 @@ namespace Cards
         {
             if (DeckManagerSingleton != null) Destroy(this);
             else DeckManagerSingleton = this;
+            _playerOneCardNames = PlayerPrefs.GetString("PlayerOneDeck").Split(',');
+            _playerTwoCardNames = PlayerPrefs.GetString("PlayerTwoDeck").Split(',');
             SetAllDecks();
-            var decks = FindObjectsOfType<Deck>();
         }
         private IEnumerable<CardPropertiesData> CreatingAllCardsList(string path)
         {
