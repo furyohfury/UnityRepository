@@ -83,6 +83,7 @@ namespace Cards
             }
             if (Taunt.TauntCards.Contains(cardComp.GetCardPropertyData()._name)) cardComp.Taunt = true;
             cardGO.name = cardComp.GetCardPropertyData()._name;
+            
             return cardGO;
         }
         public void AddCardToDeck(PlayerSide player, Card card)

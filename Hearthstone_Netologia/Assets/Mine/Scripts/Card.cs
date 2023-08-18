@@ -216,12 +216,6 @@ namespace Cards
                 //todo взрыв портрета героя
             }
         } */
-        public void PlayedEffect()
-        {
-            // Если чардж то сразу может бить
-            if (Charge) CanAttack = true;
-
-        }
         public delegate void Drags(Card card);
         public event Drags OnDragBegin;
         public event Drags OnDragging;

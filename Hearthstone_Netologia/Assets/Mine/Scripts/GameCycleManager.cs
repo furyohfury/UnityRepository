@@ -19,7 +19,7 @@ namespace Cards
         private Camera _camera;
         [SerializeField]
         private float _timeForCameraMove = 2;
-        public float TimeToMove { get; private set; }  = 1;
+        public float TimeToMove { get; private set; } = 1;
         private Dictionary<PlayerSide, List<HandPosition>> _handsDict = new();
         private Dictionary<PlayerSide, List<BoardPosition>> _boardDict = new();
         private Dictionary<PlayerSide, Deck> _decksDict = new();
@@ -36,6 +36,8 @@ namespace Cards
         private Vector3 _cardPositionBeforeDrag;
         [SerializeField]
         private GameObject _cardPrefab;
+        private Dictionary<PlayerSide, int> _fatigueDict = new();
+        private Dictionary<PlayerSide, PlayerPortrait> _playerPortraitsDict = new();
         private void Awake()
         {
             if (GameCycleSingleton != null) Destroy(this);
@@ -55,11 +57,17 @@ namespace Cards
             // Дефолт мана
             ManaDict.Add(PlayerSide.One, (1, 1));
             ManaDict.Add(PlayerSide.Two, (0, 0));
+            // Дефолт фатиг и портреты
+            for (int i = 0; i < 2; i++)
+            {
+                _fatigueDict.Add((PlayerSide)i, 0);
+                _playerPortraitsDict.Add((PlayerSide)i, FindObjectsOfType<PlayerPortrait>().Single(portrait => portrait.Player == (PlayerSide)i));
+            }
             SetupHandsBoardDecksDictionaries();
             // Подписка на перемещение карт
-            foreach(var hands in _handsDict.Values)
+            foreach (var hands in _handsDict.Values)
             {
-                foreach(var hand in hands)
+                foreach (var hand in hands)
                 {
                     if (hand.LinkedCard != null)
                     {
@@ -93,6 +101,7 @@ namespace Cards
             {
                 if (handPosition.LinkedCard != null) handPosition.LinkedCard.transform.eulerAngles = new Vector3(0, 0, 180);
             }
+
             // Отзеркаливание стола
             _board.transform.eulerAngles = (CurrentPlayer == PlayerSide.One) ? new Vector3(0, 180, 0) : Vector3.zero;
             Vector3 firstDeckPos = _decksDict[PlayerSide.One].transform.position;
@@ -130,6 +139,14 @@ namespace Cards
 
         public void GivePlayerACard(PlayerSide player)
         {
+            // Если в колоде нет карт - фатиг
+            if (_decksDict[player].DeckCards.Count <= 0)
+            {
+                // Fatigue
+                _playerPortraitsDict[player].ChangePlayerHealth(-_fatigueDict[player]++);
+                RotatingCards();
+                return;
+            }
             var newCard = DeckManagerSingleton.GetRandomCardFromDeck(player);
             Card newCardComp = newCard.GetComponent<Card>();
             //Нахождение пустого места
@@ -158,9 +175,10 @@ namespace Cards
             newCard.OnDragging += DraggingCard;
             newCard.OnDragEnd += DragEnd;
             emptyHandPosition.SetLinkedCard(newCard.GetComponent<Card>());
+            RotatingCards();
             InputOn = true;
         }
-        #endregion
+
         private void ChangeStartTurnMana(PlayerSide player)
         {
             if (ManaDict[player].maxMana < _maxPossibleMana)
@@ -185,6 +203,24 @@ namespace Cards
                 }
             }
         }
+        private void RotatingCards()
+        {
+            // Переворот всех карт 
+            for (int i = 0; i < 2; i++)
+            {
+                foreach (var handPos in _handsDict[(PlayerSide)i])
+                {
+                    if (handPos.LinkedCard != null) handPos.LinkedCard.transform.eulerAngles = (CurrentPlayer == PlayerSide.One) ? new Vector3(handPos.LinkedCard.transform.eulerAngles.x, 0, handPos.LinkedCard.transform.eulerAngles.z) : new Vector3(handPos.LinkedCard.transform.eulerAngles.x, 180, handPos.LinkedCard.transform.eulerAngles.z);
+                }
+                foreach (var boardPos in _boardDict[(PlayerSide)i])
+                {
+                    if (boardPos.LinkedCard != null) boardPos.LinkedCard.transform.eulerAngles = (CurrentPlayer == PlayerSide.One) ? new Vector3(boardPos.LinkedCard.transform.eulerAngles.x, 0, boardPos.LinkedCard.transform.eulerAngles.z) : new Vector3(boardPos.LinkedCard.transform.eulerAngles.x, 180, boardPos.LinkedCard.transform.eulerAngles.z);
+                }
+            }
+
+        }
+        #endregion
+        #region Dragi
         private void DragBegin(Card card)
         {
             if (card.IsBeingMulliganned || !InputOn || card.Player != CurrentPlayer || (card.LinkedHandPosition != null && ManaDict[card.Player].currentMana < card.GetCardPropertyData()._cost) || (card.LinkedBoardPosition != null && !card.CanAttack)) return;
@@ -225,12 +261,17 @@ namespace Cards
                 {
                     Battlecry(card);
                 }
+                // Чек на пассивные эффекты
+                if (PassiveList.PassiveEfectCards.Contains(card.GetCardPropertyData()._name))
+                {
+                    //todo
+                }
             }
             // Бьет ли в лицо
             else if (card.CanAttack && Physics.Raycast(card.transform.position, Vector3.down, out RaycastHit hitPlayer, 20, playerPortraitMask) && hitPlayer.collider.TryGetComponent(out PlayerPortrait playerPortrait) && card.Player != playerPortrait.Player)
             {
                 // Если есть таунт
-                if (_boardDict[playerPortrait.Player].Where(boardPos=> boardPos.LinkedCard != null && boardPos.LinkedCard.Taunt).ToArray().Length > 0)
+                if (_boardDict[playerPortrait.Player].Where(boardPos => boardPos.LinkedCard != null && boardPos.LinkedCard.Taunt).ToArray().Length > 0)
                 {
                     ReturnCard(card);
                     Debug.Log("there's taunt");
@@ -248,7 +289,7 @@ namespace Cards
                     Debug.Log("there's taunt");
                     //todo текст (анимация) что есть таунт
                 }
-                else  StartCoroutine(HitEnemyAnimation(card, boardPositionwEnemy));
+                else StartCoroutine(HitEnemyAnimation(card, boardPositionwEnemy));
             }
             else
             {
@@ -257,7 +298,7 @@ namespace Cards
                 ReturnCard(card);
             }
             _draggingCard = null;
-        }       
+        }
         private void ReturnCard(Card card)
         {
             card.transform.position = _cardPositionBeforeDrag;
@@ -265,6 +306,7 @@ namespace Cards
 
         private IEnumerator HitFaceAnimation(Card card, PlayerPortrait playerPortrait)
         {
+            InputOn = false;
             float time = 0;
             float halfTimeToMove = TimeToMove / 2;
             Vector3 startPos = _cardPositionBeforeDrag;
@@ -286,11 +328,12 @@ namespace Cards
             }
             card.transform.position = _cardPositionBeforeDrag;
             card.CanAttack = false;
-            playerPortrait.ChangePlayerHealth(-card.GetCardPropertyData()._attack);          
-            
+            playerPortrait.ChangePlayerHealth(-card.GetCardPropertyData()._attack);
+            InputOn = true;
         }
         private IEnumerator HitEnemyAnimation(Card card, BoardPosition boardPositionwEnemy)
         {
+            InputOn = false;
             float time = 0;
             float halfTimeToMove = TimeToMove / 2;
             Vector3 startPos = _cardPositionBeforeDrag;
@@ -318,6 +361,7 @@ namespace Cards
             // Кто-то сдох?
             CheckAliveAndDestroyCard(card);
             CheckAliveAndDestroyCard(boardPositionwEnemy.LinkedCard);
+            InputOn = true;
         }
         private void CheckAliveAndDestroyCard(Card card)
         {
@@ -326,9 +370,15 @@ namespace Cards
                 card.OnDragBegin -= DragBegin;
                 card.OnDragging -= DraggingCard;
                 card.OnDragEnd -= DragEnd;
+                // Чек на пассивные эффекты
+                if (PassiveList.PassiveEfectCards.Contains(card.GetCardPropertyData()._name))
+                {
+                    //todo
+                }
                 Destroy(card.gameObject);
             }
         }
+        #endregion
         private void SetupHandsBoardDecksDictionaries()
         {
             // Добавление в словарь HandPositions (зачем так сложно непонятно делал бы для двух не парился)

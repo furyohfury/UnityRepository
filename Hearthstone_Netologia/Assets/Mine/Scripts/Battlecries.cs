@@ -35,7 +35,18 @@ namespace Cards
                     break;
                 case "Shattered Sun Cleric":
                     {
-                        StartCoroutine(WaitForClickSpecified(card, false, BattlecryTargets.Friendly));
+                        StartCoroutine(WaitForClickSpecified(card, false, Targets.Friendly));
+                    }
+                    break;
+                case "Frostwolf Warlord":
+                    {
+                        //todo +1 +1 за каждого союзного миньона
+                    }
+                    break;
+                case "Houndmaster":
+                    {
+                        //todo +2 +2 своему бисту
+                        StartCoroutine(WaitForClickSpecified(card, false, Targets.Friendly, CardUnitType.Beast));
                     }
                     break;
             }
@@ -78,7 +89,7 @@ namespace Cards
             }
         }
 
-        private IEnumerator WaitForClickSpecified(Card card, bool withPlayer, BattlecryTargets target, CardUnitType type = CardUnitType.Common)
+        private IEnumerator WaitForClickSpecified(Card card, bool withPlayer, Targets target, CardUnitType type = CardUnitType.Common)
         {
             ResetClicked();
             if (!CheckForTargets(out List<BoardPosition> boardTargets, card, target, type)) yield break;
@@ -103,7 +114,7 @@ namespace Cards
                             UnitAction(card);
                             yield break;
                         }
-                        else if (withPlayer && hit.collider.TryGetComponent(out PlayerPortrait playerPortrait) && (target == BattlecryTargets.Friendly && playerPortrait.Player == card.Player || target == BattlecryTargets.Enemies && playerPortrait.Player != card.Player))
+                        else if (withPlayer && hit.collider.TryGetComponent(out PlayerPortrait playerPortrait) && (target == Targets.Friendly && playerPortrait.Player == card.Player || target == Targets.Enemies && playerPortrait.Player != card.Player))
                         {
                             _clickedPlayer = playerPortrait;
                             InputOn = true;
@@ -117,12 +128,12 @@ namespace Cards
             }
 
         }
-        private bool CheckForTargets(out List<BoardPosition> boardTargets, Card card, BattlecryTargets target, CardUnitType type = CardUnitType.Common)
+        private bool CheckForTargets(out List<BoardPosition> boardTargets, Card card, Targets target, CardUnitType type = CardUnitType.Common)
         {
             boardTargets = new();
             switch (target)
             {
-                case BattlecryTargets.Friendly:
+                case Targets.Friendly:
                     {
                         // ≈сть хот€ бы одна дружественна€ карта с нужным типом если он задан
                         foreach (var boardPositions in _boardDict.Values)
@@ -132,7 +143,7 @@ namespace Cards
                         if (boardTargets.Count > 0) return true;
                         return false;
                     }
-                case BattlecryTargets.Enemies:
+                case Targets.Enemies:
                     {
                         // ≈сть хот€ бы одна вражеска€ карта с нужным типом если он задан
                         foreach (var boardPositions in _boardDict.Values)
@@ -142,7 +153,7 @@ namespace Cards
                         if (boardTargets.Count > 0) return true;
                         return false;
                     }
-                case BattlecryTargets.All:
+                case Targets.All:
                     {
                         // ≈сть хот€ бы одна карта с нужным типом если он задан
                         foreach (var boardPositions in _boardDict.Values)
