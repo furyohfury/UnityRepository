@@ -12,16 +12,21 @@ namespace Cards
         public SideType Hero { get; private set; }
         [field: SerializeField]
         public PlayerSide Player { get; private set; }
-        [field : SerializeField]
-        public int Health { get; private set; } = 10;
-        private int _maxHP;
+        public int Health { get; private set; }
+        [SerializeField]
+        private int _maxHP = 10;
         [SerializeField]
         private TextMeshPro _hpText;
+        [SerializeField]
+        private GameObject _explosion;
+        [SerializeField]
+        private AudioClip _loseSound;
+        [SerializeField]
+        private AudioSource _audioSource;
         // Start is called before the first frame update
         void Start()
-        {
-            Health = 10;
-            _maxHP = 10;
+        {            
+            Health = _maxHP;
             _hpText.text = _maxHP + "";
         }
         public void ChangePlayerHealth(int delta, bool isHealing = true)
@@ -40,10 +45,21 @@ namespace Cards
             if (Health <= 0)
             {
                 //todo анимация взрыв портрета героя и победа
-#if UNITY_EDITOR
-                EditorApplication.isPaused = true;
-#endif                
+                StartCoroutine(LoseAnimation());
+
             }
         }
+        private IEnumerator LoseAnimation()
+        {
+            Instantiate(_explosion, transform.position + Vector3.up * 10, Quaternion.Euler(new Vector3(90, 0, 0)));
+            _audioSource.PlayOneShot(_loseSound);
+            yield return new WaitForSeconds(2f);
+            OnLost?.Invoke(this);
+#if UNITY_EDITOR
+            EditorApplication.isPaused = true;
+#endif
+        }
+        public delegate void Lost(PlayerPortrait portrait);
+        public event Lost OnLost;
     }
 }

@@ -117,6 +117,7 @@ namespace Cards
             if (IsBeingMulliganned) return;
             gameObject.transform.localScale /= 1.2f;
         }
+        
         #endregion
         public CardPropertyData GetCardPropertyData()
         {
@@ -194,38 +195,7 @@ namespace Cards
         {
             Effects.Remove(effect);
         } 
-        /* private IEnumerator HitFaceAnimation(PlayerPortrait playerPortrait)
-        {
-            float time = 0;
-            float timeToMove = GameCycleSingleton.TimeToMove / 2;
-            Vector3 startPos = _positionBeforeDrag;
-            Vector3 endPos = playerPortrait.transform.position;
-            while (time < timeToMove)
-            {
-                transform.position = Vector3.Lerp(startPos, endPos, time / timeToMove);
-                time += Time.deltaTime;
-                yield return null;
-            }
-            time = 0;
-            startPos = transform.position;
-            endPos = _positionBeforeDrag;
-            while (time < GameCycleSingleton.TimeToMove)
-            {
-                transform.position = Vector3.Lerp(startPos, endPos, time / timeToMove);
-                time += Time.deltaTime;
-                yield return null;
-            }
-            transform.position = _positionBeforeDrag;
-            playerPortrait.ChangePlayerHealth(-CardData._attack);
-            CanAttack = false;
-            if (playerPortrait.Health <= 0)
-            {
-#if UNITY_EDITOR
-                EditorApplication.isPaused = true;
-#endif
-                //todo взрыв портрета героя
-            }
-        } */
+        
         public delegate void Drags(Card card);
         public event Drags OnDragBegin;
         public event Drags OnDragging;

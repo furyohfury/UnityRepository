@@ -22,6 +22,7 @@ namespace Cards
         [SerializeField]
         private float _timeToMove = 1f;
         private PlayerSide _currentPlayer = PlayerSide.One;
+        private Dictionary<PlayerSide, PlayerPortrait> _playerPortraitsDict = new();
         private void Awake()
         {
             if (MulliganSingleton != null) Destroy(this);
@@ -38,8 +39,24 @@ namespace Cards
 
         private void Start()
         {
+            SettingHeroes();
             CreateMulliganPositions();
             MulliganStart(_currentPlayer);
+        }
+        private void SettingHeroes()
+        {
+            for (int i = 0; i < 2; i++)
+            {
+                _playerPortraitsDict.Add((PlayerSide)i, FindObjectsOfType<PlayerPortrait>().Single(portrait => portrait.Player == (PlayerSide)i));
+            }
+            for (int i = 0; i < 2; i++)
+            {
+                string heroName = (PlayerSide)i == PlayerSide.One ? PlayerPrefs.GetString("PlayerOneHero") : PlayerPrefs.GetString("PlayerTwoHero");
+                Texture heroTexture = (Texture)Resources.Load("Heroes/" + heroName);
+                MeshRenderer mesh = _playerPortraitsDict[(PlayerSide)i].gameObject.GetComponent<MeshRenderer>();
+                mesh.material.mainTexture = heroTexture;
+                mesh.material.mainTextureScale = new Vector2(-1, -1);
+            }
         }
         private void CreateMulliganPositions()
         {

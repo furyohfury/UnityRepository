@@ -39,6 +39,10 @@ namespace Cards
         private Dictionary<PlayerSide, int> _fatigueDict = new();
         private Dictionary<PlayerSide, PlayerPortrait> _playerPortraitsDict = new();
         public Dictionary<Card, Effect> EffectsList = new();
+        [SerializeField]
+        private TextMeshProUGUI _tauntText;
+        [SerializeField]
+        private TextMeshProUGUI _playerWonText;
         private void Awake()
         {
             if (GameCycleSingleton != null) Destroy(this);
@@ -63,8 +67,9 @@ namespace Cards
             {
                 _fatigueDict.Add((PlayerSide)i, 0);
                 _playerPortraitsDict.Add((PlayerSide)i, FindObjectsOfType<PlayerPortrait>().Single(portrait => portrait.Player == (PlayerSide)i));
+                _playerPortraitsDict[(PlayerSide)i].OnLost += GameFinish;
             }
-            SettingHeroes();
+            // SettingHeroes();
             SetupHandsBoardDecksDictionaries();
             // Подписка на перемещение карт
             foreach (var hands in HandsDict.Values)
@@ -80,20 +85,17 @@ namespace Cards
                 }
             }
         }
-        private void SettingHeroes()
+        /* private void SettingHeroes()
         {
             for (int i = 0; i < 2; i++)
             {
                 string heroName = (PlayerSide)i == PlayerSide.One ? PlayerPrefs.GetString("PlayerOneHero") : PlayerPrefs.GetString("PlayerTwoHero");
-                Texture heroTexture = (Texture)Resources.Load("/Heroes/" + heroName + ".png");
+                Texture heroTexture = (Texture)Resources.Load("Heroes/" + heroName);
                 MeshRenderer mesh = _playerPortraitsDict[(PlayerSide) i].gameObject.GetComponent<MeshRenderer>();
                 mesh.material.mainTexture = heroTexture;
-                mesh.material.mainTextureScale = new Vector2(1, 1);
+                mesh.material.mainTextureScale = new Vector2(-1, -1);
             }
-            Texture test = (Texture)Resources.Load("/Heroes/" + "Mage");
-            _playerPortraitsDict[PlayerSide.One].gameObject.GetComponent<MeshRenderer>().material.mainTexture = test;
-            _playerPortraitsDict[PlayerSide.One].gameObject.GetComponent<MeshRenderer>().material.mainTextureScale = new Vector2(1, 1);
-        }
+        } */
         private void SetupHandsBoardDecksDictionaries()
         {
             // Добавление в словарь HandPositions (зачем так сложно непонятно делал бы для двух не парился)
@@ -323,7 +325,7 @@ namespace Cards
                 {
                     ReturnCard(card);
                     Debug.Log("there's taunt");
-                    //todo текст (анимация) что есть таунт
+                    StartCoroutine(TauntWarning());
                 }
                 else StartCoroutine(HitFaceAnimation(card, playerPortrait));
             }
@@ -335,7 +337,7 @@ namespace Cards
                 {
                     ReturnCard(card);
                     Debug.Log("there's taunt");
-                    //todo текст (анимация) что есть таунт
+                    StartCoroutine(TauntWarning());
                 }
                 else StartCoroutine(HitEnemyAnimation(card, boardPositionwEnemy));
             }
@@ -375,7 +377,14 @@ namespace Cards
                 effect.ApplyEffect();
             }
         }
-
+        private IEnumerator TauntWarning()
+        {
+            InputOn = false;
+            _tauntText.gameObject.SetActive(true);
+            yield return new WaitForSeconds(1f);
+            _tauntText.gameObject.SetActive(false);
+            InputOn = true;
+        }
         private IEnumerator HitFaceAnimation(Card card, PlayerPortrait playerPortrait)
         {
             InputOn = false;
@@ -452,6 +461,18 @@ namespace Cards
             }
         }
         #endregion
-
+        private void GameFinish(PlayerPortrait playerPortrait)
+        {
+            if (playerPortrait.Player == PlayerSide.One)
+            {
+                _playerWonText.text = "Player One Won";
+                _playerWonText.gameObject.SetActive(true);
+            }
+            else
+            {
+                _playerWonText.text = "Player Two Won";
+                _playerWonText.gameObject.SetActive(true);
+            }
+        }
     }
 }
