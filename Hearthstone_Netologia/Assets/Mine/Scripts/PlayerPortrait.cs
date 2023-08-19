@@ -1,7 +1,5 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor;
 using TMPro;
 
 namespace Cards
@@ -9,7 +7,7 @@ namespace Cards
     public class PlayerPortrait : MonoBehaviour
     {
         [field: SerializeField]
-        public SideType Hero { get; private set; }
+        public SideType Hero { get; set; }
         [field: SerializeField]
         public PlayerSide Player { get; private set; }
         public int Health { get; private set; }
@@ -23,14 +21,19 @@ namespace Cards
         private AudioClip _loseSound;
         [SerializeField]
         private AudioSource _audioSource;
-        // Start is called before the first frame update
+        [SerializeField]
+        private GameObject _damageMask;
         void Start()
-        {            
+        {
             Health = _maxHP;
             _hpText.text = _maxHP + "";
         }
-        public void ChangePlayerHealth(int delta, bool isHealing = true)
+        public void ChangePlayerHealth(int delta, bool isHealing = false)
         {
+            if (delta < 0)
+            {
+                StartCoroutine(DamageReceived());
+            }
             if (isHealing)
             {
                 if (Health + delta <= _maxHP) Health += delta;
@@ -44,9 +47,7 @@ namespace Cards
             _hpText.text = Health + "";
             if (Health <= 0)
             {
-                //todo анимация взрыв портрета героя и победа
                 StartCoroutine(LoseAnimation());
-
             }
         }
         private IEnumerator LoseAnimation()
@@ -55,9 +56,12 @@ namespace Cards
             _audioSource.PlayOneShot(_loseSound);
             yield return new WaitForSeconds(2f);
             OnLost?.Invoke(this);
-#if UNITY_EDITOR
-            EditorApplication.isPaused = true;
-#endif
+        }
+        private IEnumerator DamageReceived()
+        {
+            _damageMask.SetActive(true);
+            yield return new WaitForSeconds(1f);
+            _damageMask.SetActive(false);
         }
         public delegate void Lost(PlayerPortrait portrait);
         public event Lost OnLost;

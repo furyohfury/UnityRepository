@@ -5,44 +5,44 @@ using UnityEngine;
 using System.Linq;
 using static Cards.DecksManager;
 using TMPro;
-using UnityEngine.EventSystems;
 using UnityEditor;
 namespace Cards
 {
     public partial class GameCycleManager : MonoBehaviour
     {
         public static GameCycleManager GameCycleSingleton;
-        public PlayerSide CurrentPlayer { get; private set; } = PlayerSide.One;
+
         [SerializeField]
         private EndTurnButton _endTurnButton;
         [SerializeField]
         private Camera _camera;
         [SerializeField]
         private float _timeForCameraMove = 2;
-        public float TimeToMove { get; private set; } = 1;
-        public Dictionary<PlayerSide, List<HandPosition>> HandsDict { get; private set; } = new();
-        public Dictionary<PlayerSide, List<BoardPosition>> BoardDict { get; private set; } = new();
-        private Dictionary<PlayerSide, Deck> _decksDict = new();
-        private int _numberOfPlayers;
-        // private (PlayerSide player, uint currentMana, uint maxMana) _manaData = (PlayerSide.One, 1, 1);
-        public Dictionary<PlayerSide, (int currentMana, int maxMana)> ManaDict { get; private set; } = new();
-        private int _maxPossibleMana = 10;
         [SerializeField]
         private TextMeshProUGUI _manaText;
         [SerializeField]
         private GameObject _board;
-        public bool InputOn { get; private set; } = true;
-        private GameObject _draggingCard;
-        private Vector3 _cardPositionBeforeDrag;
         [SerializeField]
         private GameObject _cardPrefab;
-        private Dictionary<PlayerSide, int> _fatigueDict = new();
-        private Dictionary<PlayerSide, PlayerPortrait> _playerPortraitsDict = new();
-        public Dictionary<Card, Effect> EffectsList = new();
         [SerializeField]
         private TextMeshProUGUI _tauntText;
         [SerializeField]
         private TextMeshProUGUI _playerWonText;
+        public float TimeToMove { get; private set; } = 1;
+        private GameObject _draggingCard;
+        private Vector3 _cardPositionBeforeDrag;
+        private int _numberOfPlayers;
+        private int _maxPossibleMana = 10;
+        public bool InputOn { get; private set; } = true;
+        public PlayerSide CurrentPlayer { get; private set; } = PlayerSide.One;
+        public Dictionary<PlayerSide, List<HandPosition>> HandsDict { get; private set; } = new();
+        public Dictionary<PlayerSide, List<BoardPosition>> BoardDict { get; private set; } = new();
+        private Dictionary<PlayerSide, Deck> _decksDict = new();
+        public Dictionary<PlayerSide, (int currentMana, int maxMana)> ManaDict { get; private set; } = new();
+        private Dictionary<PlayerSide, int> _fatigueDict = new();
+        private Dictionary<PlayerSide, PlayerPortrait> _playerPortraitsDict = new();
+        public Dictionary<Card, Effect> EffectsList = new();
+        #region Setup
         private void Awake()
         {
             if (GameCycleSingleton != null) Destroy(this);
@@ -57,19 +57,10 @@ namespace Cards
             _endTurnButton.OnEndTurn -= EndTurn;
         }
         private void Start()
-        {            
+        {
             _numberOfPlayers = Enum.GetNames(typeof(PlayerSide)).Length;
-            // Дефолт мана
-            ManaDict.Add(PlayerSide.One, (1, 1));
-            ManaDict.Add(PlayerSide.Two, (0, 0));
-            // Дефолт фатиг и портреты
-            for (int i = 0; i < 2; i++)
-            {
-                _fatigueDict.Add((PlayerSide)i, 0);
-                _playerPortraitsDict.Add((PlayerSide)i, FindObjectsOfType<PlayerPortrait>().Single(portrait => portrait.Player == (PlayerSide)i));
-                _playerPortraitsDict[(PlayerSide)i].OnLost += GameFinish;
-            }
-            // SettingHeroes();
+            DefaultManaSetup();
+            DefaultFatigueAndPortraitsSetup();
             SetupHandsBoardDecksDictionaries();
             // Подписка на перемещение карт
             foreach (var hands in HandsDict.Values)
@@ -85,20 +76,26 @@ namespace Cards
                 }
             }
         }
-        /* private void SettingHeroes()
+        private void DefaultManaSetup()
         {
+            // Дефолт мана
+            ManaDict.Add(PlayerSide.One, (1, 1));
+            _manaText.text = ManaDict[PlayerSide.One].currentMana + "/" + ManaDict[PlayerSide.One].maxMana;
+            ManaDict.Add(PlayerSide.Two, (0, 0));
+        }
+        private void DefaultFatigueAndPortraitsSetup()
+        {
+            // Дефолт фатиг и портреты
             for (int i = 0; i < 2; i++)
             {
-                string heroName = (PlayerSide)i == PlayerSide.One ? PlayerPrefs.GetString("PlayerOneHero") : PlayerPrefs.GetString("PlayerTwoHero");
-                Texture heroTexture = (Texture)Resources.Load("Heroes/" + heroName);
-                MeshRenderer mesh = _playerPortraitsDict[(PlayerSide) i].gameObject.GetComponent<MeshRenderer>();
-                mesh.material.mainTexture = heroTexture;
-                mesh.material.mainTextureScale = new Vector2(-1, -1);
+                _fatigueDict.Add((PlayerSide)i, 0);
+                _playerPortraitsDict.Add((PlayerSide)i, FindObjectsOfType<PlayerPortrait>().Single(portrait => portrait.Player == (PlayerSide)i));
+                _playerPortraitsDict[(PlayerSide)i].OnLost += GameFinish;
             }
-        } */
+        }
         private void SetupHandsBoardDecksDictionaries()
         {
-            // Добавление в словарь HandPositions (зачем так сложно непонятно делал бы для двух не парился)
+            // Добавление в словарь HandPosition. Неважно почему так сложно (клоун)
             var allHandPositions = FindObjectsOfType<HandPosition>();
             for (int i = 0; i < _numberOfPlayers; i++)
             {
@@ -126,6 +123,7 @@ namespace Cards
                 _decksDict.Add((PlayerSide)i, allDecks.Single((deck) => (int)deck.Player == i));
             }
         }
+        #endregion
         #region EndTurnPressed
         private void EndTurn()
         {
@@ -149,7 +147,6 @@ namespace Cards
             {
                 if (handPosition.LinkedCard != null) handPosition.LinkedCard.transform.eulerAngles = new Vector3(0, 0, 180);
             }
-
             // Отзеркаливание стола
             _board.transform.eulerAngles = (CurrentPlayer == PlayerSide.One) ? new Vector3(0, 180, 0) : Vector3.zero;
             Vector3 firstDeckPos = _decksDict[PlayerSide.One].transform.position;
@@ -160,7 +157,7 @@ namespace Cards
         {
             InputOn = false;
             float time = 0;
-            if (_camera.transform.eulerAngles.y == 0) //todo хз почему вообще работает, если не лень будет, разобраться
+            if (_camera.transform.eulerAngles.y == 0)
             {
                 while (time < _timeForCameraMove)
                 {
@@ -226,7 +223,22 @@ namespace Cards
             RotatingCardsAndPlayerHp();
             InputOn = true;
         }
+        private void RotatingCardsAndPlayerHp()
+        {
+            // Переворот всех карт 
+            for (int i = 0; i < 2; i++)
+            {
+                foreach (var handPos in HandsDict[(PlayerSide)i])
+                {
+                    if (handPos.LinkedCard != null) handPos.LinkedCard.transform.eulerAngles = (CurrentPlayer == PlayerSide.One) ? new Vector3(handPos.LinkedCard.transform.eulerAngles.x, 0, handPos.LinkedCard.transform.eulerAngles.z) : new Vector3(handPos.LinkedCard.transform.eulerAngles.x, 180, handPos.LinkedCard.transform.eulerAngles.z);
+                }
+                foreach (var boardPos in BoardDict[(PlayerSide)i])
+                {
+                    if (boardPos.LinkedCard != null) boardPos.LinkedCard.transform.eulerAngles = (CurrentPlayer == PlayerSide.One) ? new Vector3(boardPos.LinkedCard.transform.eulerAngles.x, 0, boardPos.LinkedCard.transform.eulerAngles.z) : new Vector3(boardPos.LinkedCard.transform.eulerAngles.x, 180, boardPos.LinkedCard.transform.eulerAngles.z);
+                }
+            }
 
+        }
         private void ChangeStartTurnMana(PlayerSide player)
         {
             if (ManaDict[player].maxMana < _maxPossibleMana)
@@ -251,24 +263,9 @@ namespace Cards
                 }
             }
         }
-        private void RotatingCardsAndPlayerHp()
-        {
-            // Переворот всех карт 
-            for (int i = 0; i < 2; i++)
-            {
-                foreach (var handPos in HandsDict[(PlayerSide)i])
-                {
-                    if (handPos.LinkedCard != null) handPos.LinkedCard.transform.eulerAngles = (CurrentPlayer == PlayerSide.One) ? new Vector3(handPos.LinkedCard.transform.eulerAngles.x, 0, handPos.LinkedCard.transform.eulerAngles.z) : new Vector3(handPos.LinkedCard.transform.eulerAngles.x, 180, handPos.LinkedCard.transform.eulerAngles.z);
-                }
-                foreach (var boardPos in BoardDict[(PlayerSide)i])
-                {
-                    if (boardPos.LinkedCard != null) boardPos.LinkedCard.transform.eulerAngles = (CurrentPlayer == PlayerSide.One) ? new Vector3(boardPos.LinkedCard.transform.eulerAngles.x, 0, boardPos.LinkedCard.transform.eulerAngles.z) : new Vector3(boardPos.LinkedCard.transform.eulerAngles.x, 180, boardPos.LinkedCard.transform.eulerAngles.z);
-                }
-            }
 
-        }
         #endregion
-        #region Dragi
+        #region DragiAndConnectedToThem
         private void DragBegin(Card card)
         {
             if (card.IsBeingMulliganned || !InputOn || card.Player != CurrentPlayer || (card.LinkedHandPosition != null && ManaDict[card.Player].currentMana < card.GetCardPropertyData()._cost) || (card.LinkedBoardPosition != null && !card.CanAttack)) return;
@@ -324,7 +321,7 @@ namespace Cards
                 if (BoardDict[playerPortrait.Player].Where(boardPos => boardPos.LinkedCard != null && boardPos.LinkedCard.Taunt).ToArray().Length > 0)
                 {
                     ReturnCard(card);
-                    Debug.Log("there's taunt");
+                    // Debug.Log("there's taunt");
                     StartCoroutine(TauntWarning());
                 }
                 else StartCoroutine(HitFaceAnimation(card, playerPortrait));
@@ -336,7 +333,7 @@ namespace Cards
                 if (!boardPositionwEnemy.LinkedCard.Taunt && BoardDict[boardPositionwEnemy.Player].Where(boardPos => boardPos.LinkedCard != null && boardPos.LinkedCard.Taunt).ToArray().Length > 0)
                 {
                     ReturnCard(card);
-                    Debug.Log("there's taunt");
+                    // Debug.Log("there's taunt");
                     StartCoroutine(TauntWarning());
                 }
                 else StartCoroutine(HitEnemyAnimation(card, boardPositionwEnemy));
@@ -344,7 +341,7 @@ namespace Cards
             else
             {
                 // Не выложена на поле. А если выложена - не атакует
-                Debug.Log("returning");
+                // Debug.Log("returning");
                 ReturnCard(card);
             }
             _draggingCard = null;
@@ -359,14 +356,6 @@ namespace Cards
             {
                 Effect effect = new(card);
                 EffectsList.Add(card, effect);
-                /* foreach(var boardPos in effect.Targets)
-                {
-                    if (boardPos.LinkedCard != null)
-                    {
-                        boardPos.LinkedCard.AddEffect(effect);
-                        effect.ApplyEffect(boardPos.LinkedCard);
-                    }
-                } */
                 effect.ApplyEffect();
             }
         }
@@ -473,6 +462,10 @@ namespace Cards
                 _playerWonText.text = "Player Two Won";
                 _playerWonText.gameObject.SetActive(true);
             }
+            /*
+#if UNITY_EDITOR
+            EditorApplication.isPaused = true;
+#endif */
         }
     }
 }

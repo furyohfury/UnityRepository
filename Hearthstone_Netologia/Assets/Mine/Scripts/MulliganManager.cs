@@ -11,17 +11,17 @@ namespace Cards
     public class MulliganManager : MonoBehaviour
     {
         public static MulliganManager MulliganSingleton;
-        private List<MulliganPosition> _mulliganPositions = new();
         [SerializeField]
         private MulliganEnd _mulliganEnd;
         [SerializeField]
         private int _mulliganSize = 3;
         [SerializeField]
         private GameObject _mulliganPositionPrefab;
-        public bool Input { get; private set; } = true;
         [SerializeField]
         private float _timeToMove = 1f;
+        public bool InputMull { get; private set; } = true;
         private PlayerSide _currentPlayer = PlayerSide.One;
+        private List<MulliganPosition> _mulliganPositions = new();
         private Dictionary<PlayerSide, PlayerPortrait> _playerPortraitsDict = new();
         private void Awake()
         {
@@ -45,6 +45,7 @@ namespace Cards
         }
         private void SettingHeroes()
         {
+            // Портреты героев из префов
             for (int i = 0; i < 2; i++)
             {
                 _playerPortraitsDict.Add((PlayerSide)i, FindObjectsOfType<PlayerPortrait>().Single(portrait => portrait.Player == (PlayerSide)i));
@@ -53,6 +54,7 @@ namespace Cards
             {
                 string heroName = (PlayerSide)i == PlayerSide.One ? PlayerPrefs.GetString("PlayerOneHero") : PlayerPrefs.GetString("PlayerTwoHero");
                 Texture heroTexture = (Texture)Resources.Load("Heroes/" + heroName);
+                _playerPortraitsDict[(PlayerSide)i].Hero = Enum.Parse<SideType>(heroName);
                 MeshRenderer mesh = _playerPortraitsDict[(PlayerSide)i].gameObject.GetComponent<MeshRenderer>();
                 mesh.material.mainTexture = heroTexture;
                 mesh.material.mainTextureScale = new Vector2(-1, -1);
@@ -71,26 +73,28 @@ namespace Cards
         }
         private void MulliganStart(PlayerSide player)
         {
+            InputMull = false;
             // Взятие карт из колоды на муллиган
             ResetMulliganPositions();
             List<GameObject> _mulliganCards = new();
             do
             {
-                GameObject card = DeckManagerSingleton.GetRandomCardFromDeck(player, true);
+                GameObject card = DeckManagerSingleton.GetRandomCardFromDeck(player);
                 if (!_mulliganCards.Contains(card))
                 {
                     _mulliganCards.Add(card);
                     card.transform.position = DeckManagerSingleton.GetDeckPosition(player);
-                    card.GetComponent<Card>().BeingMulliganed(true);
+                    card.GetComponent<Card>().SetBeingMulliganed(true);
                 }
-                else Destroy(card);
+                else Destroy(card.gameObject);
             } while (_mulliganCards.Count < _mulliganSize);
+            InputMull = true;
             // Анимация выдачи и присваивание позициям как LinkedCard
             StartCoroutine(MulliganStartAnimation(player, _mulliganCards));
         }
         private IEnumerator MulliganStartAnimation(PlayerSide player, IEnumerable<GameObject> mulliganCards)
         {
-            Input = false;
+            InputMull = false;
             List<GameObject> mulCards = mulliganCards.ToList();
             // Выдать карты на позиции
             for (int i = 0; i < _mulliganSize; i++)
@@ -109,7 +113,7 @@ namespace Cards
                 mulCards[i].transform.rotation = Quaternion.Euler(new Vector3(0, 0, 180));
                 _mulliganPositions[i].SetLinkedCard(mulCards[i].GetComponent<Card>());
             }
-            Input = true;
+            InputMull = true;
         }
         private void MulliganChange(PlayerSide player, IEnumerable<MulliganPosition> mulliganPositions)
         {
@@ -117,7 +121,7 @@ namespace Cards
         }
         private IEnumerator MulliganChangeCardsAnimation(PlayerSide player, IEnumerable<MulliganPosition> mulliganPositions)
         {
-            Input = false;
+            InputMull = false;
             //вернуть одну, дестрой её, отдать новую
             foreach (MulliganPosition mullPos in mulliganPositions)
             {
@@ -133,6 +137,7 @@ namespace Cards
                 }
                 mullPos.LinkedCard.transform.position = endPos;
                 DeckManagerSingleton.AddCardToDeck(player, mullPos.LinkedCard);
+                Destroy(mullPos.LinkedCard.gameObject);
                 // Лерп карты newCard к mullPos
                 GameObject newCard = DeckManagerSingleton.GetRandomCardFromDeck(player);
                 time = 0;
@@ -152,7 +157,6 @@ namespace Cards
             // Добавление выбранных карт в руку
             List<HandPosition> handOfPlayer = FindObjectsOfType<HandPosition>().Where((handPos) => handPos.Player == player).OrderBy((pos) => pos.gameObject.name).ToList();
             StartCoroutine(MulliganFinishAnimation(player, handOfPlayer));
-            Input = true;
         }
 
         private void MulliganFinish(PlayerSide player)
@@ -163,7 +167,7 @@ namespace Cards
         }
         private IEnumerator MulliganFinishAnimation(PlayerSide player, IEnumerable<HandPosition> hand)
         {
-            Input = false;
+            InputMull = false;
             List<HandPosition> handPositions = hand.ToList();
             int i = 0;
             // Перенос кард в руку
@@ -184,9 +188,9 @@ namespace Cards
                     yield return null;
                 }
                 mullPos.LinkedCard.transform.position = endPos;
-                mullPos.LinkedCard.GetComponent<Card>().BeingMulliganed(false);
+                mullPos.LinkedCard.GetComponent<Card>().SetBeingMulliganed(false);
             }
-            Input = true;
+            InputMull = true;
             if ((int)_currentPlayer + 1 < Enum.GetNames(typeof(PlayerSide)).Length)
             {
                 MulliganStart(++_currentPlayer);
@@ -199,7 +203,7 @@ namespace Cards
             Destroy(_mulliganEnd.gameObject);
             foreach (var mullPos in _mulliganPositions)
             {
-                Destroy(mullPos);
+                Destroy(mullPos.gameObject);
             }
             Debug.Log("Mulligan is over");
             // Включение менеджера цикла игры

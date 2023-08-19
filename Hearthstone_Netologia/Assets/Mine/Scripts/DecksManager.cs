@@ -1,7 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.IO;
 using Cards.ScriptableObjects;
 using System.Linq;
 
@@ -18,11 +16,10 @@ namespace Cards
         private Deck _playerOneDeck;
         [SerializeField]
         private Deck _playerTwoDeck;
-        // private Dictionary<PlayerSide, Deck> _decksDict = new();
-        private string _pathToPacks = "Cards";
-        public List<CardPropertiesData> AllCards { get; private set; } = new();
         [SerializeField]
         private GameObject _cardPrefab;
+        private readonly string _pathToPacks = "Cards";
+        public List<CardPropertiesData> AllCards { get; private set; } = new();
 
         private void Awake()
         {
@@ -34,6 +31,7 @@ namespace Cards
         }
         private IEnumerable<CardPropertiesData> CreatingAllCardsList(string path)
         {
+            // —оздание вписка всех карт
             List<CardPropertiesData> all = new();
             CardPackConfiguration[] packs = Resources.LoadAll(path).Cast<CardPackConfiguration>().ToArray();
             foreach (CardPackConfiguration pack in packs)
@@ -47,6 +45,7 @@ namespace Cards
         }
         private IEnumerable<CardPropertyData> AddCardsToDeck(string[] CardNames)
         {
+            // ƒобавление в колоду карт из списка всех карт
             List<CardPropertyData> cards = new();
             foreach (string cardName in CardNames)
             {
@@ -64,8 +63,9 @@ namespace Cards
             _playerOneDeck.SetDeck(AddCardsToDeck(_playerOneCardNames));
             _playerTwoDeck.SetDeck(AddCardsToDeck(_playerTwoCardNames));
         }
-        public GameObject GetRandomCardFromDeck(PlayerSide player, bool isMulliganing = false)
+        public GameObject GetRandomCardFromDeck(PlayerSide player)
         {
+            // ѕолучение рандомной карты из колоды
             Deck deck = (player == PlayerSide.One) ? _playerOneDeck : _playerTwoDeck;
             // —оздание нового GO карты и присваивание ей данных рандомной карты из колоды
             GameObject cardGO = Instantiate(_cardPrefab, deck.transform.position, Quaternion.identity);
@@ -81,7 +81,7 @@ namespace Cards
             }
             if (Taunt.TauntCards.Contains(cardComp.GetCardPropertyData()._name)) cardComp.Taunt = true;
             cardGO.name = cardComp.GetCardPropertyData()._name;
-            
+
             return cardGO;
         }
         public void AddCardToDeck(PlayerSide player, Card card)
@@ -91,6 +91,7 @@ namespace Cards
         }
         public Vector3 GetDeckPosition(PlayerSide player)
         {
+            //  остыль который впадлу исправл€ть
             Vector3 pos = (player == PlayerSide.One) ? _playerOneDeck.transform.position : _playerTwoDeck.transform.position;
             return pos;
         }

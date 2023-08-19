@@ -3,7 +3,6 @@ using UnityEngine;
 using Cards.ScriptableObjects;
 using System.Linq;
 using TMPro;
-using System.IO;
 using System.Text;
 using UnityEngine.SceneManagement;
 
@@ -13,10 +12,7 @@ namespace Cards
     {
         public static DeckCreator DeckCreatorSingleton;
         [SerializeField]
-        private CardPackConfiguration[] _commonPacks;
-        [SerializeField]
         private GameObject _cardPrefab;
-        private Vector2 _defaultCommonPosition;
         [SerializeField]
         private float _scale = 0.8f;
         [SerializeField]
@@ -24,23 +20,24 @@ namespace Cards
         [SerializeField]
         private GameObject _classStartPosition;
         [SerializeField]
-        private CardPackConfiguration[] _classPacks;
-        private List<HeroPortrait> _heroPortraits = new();
-        [SerializeField]
         private Camera _camera;
-        private Vector3 _cameraPositionOnChoosingCards = new Vector3(0, 270, 0);
         [SerializeField]
         private PlayerDeck _playerDeck;
         [SerializeField]
         private TextMeshPro _deckSizeText;
         [SerializeField]
         private TextMeshPro _chooseHeroForPlayerText;
-        private string _pathToPacks = "Cards";
+        [SerializeField]
+        private int _maxDeckSize = 10;
+        private CardPackConfiguration[] _commonPacks;
+        private CardPackConfiguration[] _classPacks;
+        private Vector2 _defaultCommonPosition;
+        private Vector3 _cameraPositionOnChoosingCards = new Vector3(0, 270, 0);
+        private List<HeroPortrait> _heroPortraits = new();
+        private readonly string _pathToPacks = "Cards";
         private static GameObject _draggingCard;
         private Vector3 _cardPositionBeforeDrag;
         private List<Card> _chosenCards = new();
-        [SerializeField]
-        private int _maxDeckSize = 10;
         private PlayerSide _currentPlayer;
         private void Awake()
         {
@@ -78,8 +75,7 @@ namespace Cards
             SettingPlayer();
             _defaultCommonPosition.x = _commonStartPosition.transform.position.x;
             _defaultCommonPosition.y = _commonStartPosition.transform.position.y;
-            _commonPacks = CreatingCommonCardsList(_pathToPacks).ToArray();
-            _classPacks = CreatingClassCardsList(_pathToPacks).ToArray();
+            CommonAndClassCardsSetup();
         }
         private void SettingPlayer()
         {
@@ -93,6 +89,11 @@ namespace Cards
                 _chooseHeroForPlayerText.text = "Choose Hero for Player Two";
                 _currentPlayer = PlayerSide.Two;
             }
+        }
+        private void CommonAndClassCardsSetup()
+        {
+            _commonPacks = CreatingCommonCardsList(_pathToPacks).ToArray();
+            _classPacks = CreatingClassCardsList(_pathToPacks).ToArray();
         }
         private IEnumerable<CardPackConfiguration> CreatingCommonCardsList(string path)
         {
@@ -144,7 +145,8 @@ namespace Cards
                 cardComponent.OnDragEnd += EndDrag;
                 _classStartPosition.transform.position += _scale * 110f * Vector3.right;
             }
-        }        
+        }
+        #region Drags
         private void BeginDrag(Card card)
         {
             _draggingCard = card.gameObject;
@@ -162,8 +164,7 @@ namespace Cards
             if (Physics.Raycast(card.transform.position, Vector3.down, out RaycastHit hitBoard, 20, 1 << 8) && hitBoard.collider.TryGetComponent(out PlayerDeck playerDeck))
             {
                 _chosenCards.Add(card);
-                Debug.Log("Got it");
-                // todo запись в текст файл
+                // Debug.Log("Got it");
                 card.OnDragBegin -= BeginDrag;
                 card.OnDragging -= Dragging;
                 card.OnDragEnd -= EndDrag;
@@ -171,7 +172,6 @@ namespace Cards
                 _deckSizeText.text = _chosenCards.Count + "/" + _maxDeckSize;
                 if (_chosenCards.Count >= _maxDeckSize)
                 {
-                    //todo выход или переключение на некст хуйню
                     WritingInPref(ChosenToString());
                 }
             }
@@ -180,8 +180,10 @@ namespace Cards
                 _draggingCard.transform.position = _cardPositionBeforeDrag;
             }
         }
+        #endregion
         private string ChosenToString()
         {
+            // Имена выбранных карт в строку
             StringBuilder sb = new();
             foreach (var card in _chosenCards)
             {
@@ -191,6 +193,7 @@ namespace Cards
         }
         private void WritingInPref(string deckCards)
         {
+            // Запись строки в префы 
             if (_currentPlayer == PlayerSide.One)
             {
                 PlayerPrefs.SetString("PlayerOneDeck", deckCards);

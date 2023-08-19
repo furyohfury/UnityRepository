@@ -75,10 +75,10 @@ namespace Cards
     }
     public struct BattlecryList
     {
-        public static readonly string[] BattlecryCards = { "Elven Archer", "Voodoo Doctor", "Acidic Swamp Ooze", "Murloc Tidehunter", "Novice Engineer", "Ironforge Rifleman", "Razorfen Hunter", "Shattered Sun Cleric", "Dragonling Mechanic", "Gnomish Inventor", "Darkscale Healer", "Frostwolf Warlord", "Nightblade", "Stormpike Commando" };
+        public static readonly string[] BattlecryCards = { "Elven Archer", "Voodoo Doctor", "Acidic Swamp Ooze", "Murloc Tidehunter", "Novice Engineer", "Ironforge Rifleman", "Razorfen Hunter", "Shattered Sun Cleric", "Dragonling Mechanic", "Gnomish Inventor", "Darkscale Healer", "Frostwolf Warlord", "Nightblade", "Stormpike Commando", "Houndmaster" };
     }
     public struct PassiveList
     {
-        public static readonly string[] PassiveEfectCards = { "Raid Leader" , "Gurubashi Berserer", "Stormwind Champion" };
+        public static readonly string[] PassiveEfectCards = { "Raid Leader", "Gurubashi Berserer", "Stormwind Champion" };
     }
 }

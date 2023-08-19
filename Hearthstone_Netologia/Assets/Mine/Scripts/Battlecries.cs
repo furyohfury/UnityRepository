@@ -25,7 +25,7 @@ namespace Cards
                     break;
                 case "Murloc Tidehunter":
                     {
-                        UnitAction(card);                        
+                        UnitAction(card);
                     }
                     break;
                 case "Novice Engineer":
@@ -92,24 +92,24 @@ namespace Cards
         {
             ResetClicked();
             if (!CheckForTargets(out List<BoardPosition> boardTargets, card, target, type)) yield break;
-            Debug.Log("Waiting for click");
+            // Debug.Log("Waiting for click");
             InputOn = false;
             while (true)
             {
                 if (Input.GetMouseButtonDown(0))
                 {
                     LayerMask mask = LayerMask.GetMask("Board", "Player");
-                    Debug.Log("Shooting ray");
+                    // Debug.Log("Shooting ray");
                     Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                     if (Physics.Raycast(ray, out RaycastHit hit, 1000, mask))
                     {
-                        Debug.Log("Clicked on mask");
+                        // Debug.Log("Clicked on mask");
                         // Есть ли кликнутая BoardPosition в списке на проверку
                         if (hit.collider.TryGetComponent(out BoardPosition boardPosition) && boardTargets.Contains(boardPosition))
                         {
                             _clickedBoardPosition = boardPosition;
                             InputOn = true;
-                            Debug.Log("Click Made on " + _clickedBoardPosition.gameObject.name);
+                            // Debug.Log("Click Made on " + _clickedBoardPosition.gameObject.name);
                             UnitAction(card);
                             yield break;
                         }
@@ -117,7 +117,7 @@ namespace Cards
                         {
                             _clickedPlayer = playerPortrait;
                             InputOn = true;
-                            Debug.Log("Click Made on " + _clickedPlayer.gameObject.name);
+                            // Debug.Log("Click Made on " + _clickedPlayer.gameObject.name);
                             UnitAction(card);
                             yield break;
                         }
@@ -215,6 +215,7 @@ namespace Cards
                     break;
             }
         }
+        // Шаблон для призыва
         private void SummonMinion(Card card, string summonName)
         {
             // Поиск свободного места
