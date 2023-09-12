@@ -1,16 +1,20 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-[RequireComponent(typeof(Rigidbody))]
-public class Bullet : MonoBehaviour
+using Photon.Pun;
+namespace Network
 {
-    void Start()
+    [RequireComponent(typeof(Rigidbody))]
+    public class Bullet : MonoBehaviourPunCallbacks
     {
-        
-    }
+        void Start()
+        {
 
-    void Update()
-    {
-        
+        }
+
+        void Update()
+        {
+
+        }
     }
 }
