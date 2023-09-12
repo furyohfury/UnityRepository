@@ -15,6 +15,7 @@ namespace Network
         [SerializeField, Range(1, 10)]
         private int _bulletsDamage = 2;
         private float _bulletsLifeTime = 5f;
+        private Player _player;
 
         private void Awake()
         {
@@ -22,11 +23,14 @@ namespace Network
         }
         private void Start()
         {
-            Vector3 spawnPos = new Vector3(Random.Range(-50f, 50f), 2, Random.Range(-50f, 50f));
-            // string playerName = Resources.Load<GameObject>("Prefabs/Player").name;
-            GameObject player = PhotonNetwork.Instantiate("Player1", spawnPos, Quaternion.identity,0);
+            SpawnPlayer();
             // Player playerComp = player.GetComponent<Player>();
             // playerComp._camera.targetDisplay = 1;
+        }
+        private void SpawnPlayer()
+        {
+            Vector3 spawnPos = new Vector3(Random.Range(-50f, 50f), 2, Random.Range(-50f, 50f));
+            _player = PhotonNetwork.Instantiate("Player1", spawnPos, Quaternion.identity, 0).GetComponent<Player>();
         }
         public override void OnEnable()
         {
@@ -87,7 +91,9 @@ namespace Network
         }
         public override void OnPlayerEnteredRoom(Photon.Realtime.Player newPlayer)
         {
-            
+            // Transform playerTransform = _player.transform;
+            // PhotonNetwork.Destroy(_player.gameObject);
+            // SpawnPlayer();
         }
         public override void OnPlayerLeftRoom(Photon.Realtime.Player otherPlayer)
         {
