@@ -7,13 +7,14 @@ using UnityEditor;
 using UnityEngine.SceneManagement;
 using Photon.Pun;
 
-namespace Network {
+namespace Network
+{
     public class Player : MonoBehaviourPunCallbacks
     {
         private PlayerControls _controls;
         private CharacterController _charController;
-        [field:SerializeField]
-        public Camera _camera { get; private set; }        
+        [field: SerializeField]
+        public Camera _camera { get; private set; }
         [SerializeField, Range(1, 10)]
         private float _cameraSpeed = 7;
         [field: SerializeField]
@@ -26,25 +27,33 @@ namespace Network {
         private GameObject _playerPrefab;
         private bool _canShoot = true;
         private PhotonView _photonView;
+        private GameManager _gameManager;
+        public static GameObject LocalPlayerInstance;
         private void Awake()
         {
-            _camera.GetComponent<AudioListener>().enabled = true;
             _photonView = GetComponent<PhotonView>();
+            if (_photonView.IsMine)
+            {
+                LocalPlayerInstance = gameObject;
+            }
+            DontDestroyOnLoad(gameObject);
+            _gameManager = FindObjectOfType<GameManager>();
             _controls = new PlayerControls();
             _controls.Enable();
             _charController = GetComponent<CharacterController>();
             // _bulletPrefab = Resources.Load<GameObject>("Prefabs/Bullet");
             // _playerPrefab = Resources.Load<GameObject>("Prefabs/Player");
+            if (_photonView.IsMine) Instantiate(_camera, transform);
         }
         private void Start()
-        {            
-            
+        {
+
         }
         public override void OnEnable()
         {
             base.OnEnable();
             _controls.ActionMap.Fire.performed += OnFire;
-            _controls.ActionMap.Quit.performed += OnQuit;
+            // _controls.ActionMap.Quit.performed += OnQuit;
         }
         #region Shooting
         private void OnFire(CallbackContext context)
@@ -55,7 +64,7 @@ namespace Network {
             Bullet bulletComp = bullet.GetComponent<Bullet>();
             if (bulletComp == null) Debug.Log("null");
 
-            Manager.AddBullet(bulletComp);
+            _gameManager.AddBullet(bulletComp);
             StartCoroutine(ShootDelaying());
         }
         private IEnumerator ShootDelaying()
@@ -75,7 +84,7 @@ namespace Network {
             Debug.Log("Quit");
 #if UNITY_EDITOR
             PhotonNetwork.LeaveRoom();
-            PhotonNetwork.LoadLevel(0);
+            // PhotonNetwork.LoadLevel(0);
 #elif !UNITY_EDITOR && UNITY_STANDALONE_WIN
             PhotonNetwork.LeaveRoom();
             // PhotonNetwork.LoadLevel(0);
@@ -87,8 +96,9 @@ namespace Network {
             CameraMovement();
             // Debug.Log(movement);
         }
-        private void OnDisable()
+        public override void OnDisable()
         {
+            base.OnDisable();
             _controls.ActionMap.Fire.performed -= OnFire;
             _controls.ActionMap.Quit.performed -= OnQuit;
         }
@@ -98,22 +108,21 @@ namespace Network {
         }
         private void CameraMovement()
         {
-            if (_photonView.IsMine)
-            {
-                Vector2 cameraMove = _controls.ActionMap.CameraMove.ReadValue<Vector2>();
-                transform.rotation *= Quaternion.Euler(new Vector3(0, cameraMove.x * Time.deltaTime * _cameraSpeed, 0));
-            }   
-            
+            if (!_photonView.IsMine && PhotonNetwork.IsConnected) return;
+            Vector2 cameraMove = _controls.ActionMap.CameraMove.ReadValue<Vector2>();
+            transform.rotation *= Quaternion.Euler(new Vector3(0, cameraMove.x * Time.deltaTime * _cameraSpeed, 0));
+
+
         }
         private void Movement()
         {
-            if (_photonView.IsMine)
-            {
-                float RotationInRads = (float)(transform.rotation.eulerAngles.y * Mathf.Deg2Rad);
-                Vector2 movement = _moveSpeed * _controls.ActionMap.Movement.ReadValue<Vector2>();
-                movement = new Vector2(movement.x * (float)System.Math.Cos(RotationInRads) + movement.y * (float)System.Math.Sin(RotationInRads), -movement.x * (float)System.Math.Sin(RotationInRads) + movement.y * (float)System.Math.Cos(RotationInRads));
-                _charController.SimpleMove(new Vector3(movement.x, 0, movement.y));
-            }            
+            if (!_photonView.IsMine && PhotonNetwork.IsConnected) return;
+
+            float RotationInRads = (float)(transform.rotation.eulerAngles.y * Mathf.Deg2Rad);
+            Vector2 movement = _moveSpeed * _controls.ActionMap.Movement.ReadValue<Vector2>();
+            movement = new Vector2(movement.x * (float)System.Math.Cos(RotationInRads) + movement.y * (float)System.Math.Sin(RotationInRads), -movement.x * (float)System.Math.Sin(RotationInRads) + movement.y * (float)System.Math.Cos(RotationInRads));
+            _charController.SimpleMove(new Vector3(movement.x, 0, movement.y));
+
         }
         #region Damaged
         private void OnTriggerEnter(Collider other)

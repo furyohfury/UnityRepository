@@ -48,14 +48,17 @@ namespace Network
         }
         
         public override void OnJoinedRoom()
-        {
-            PhotonNetwork.LoadLevel("InGame");
+        {            
             Debugger.Log("OnJoinedRoom");
+            if (PhotonNetwork.IsMasterClient) //todo mb && PhotonNetwork.CurrentRoom.PlayerCount == 1)
+            {
+                PhotonNetwork.LoadLevel("InGame");
+            }
         }
         #region MonoBehaviourPunCallbacks Callbacks
         public override void OnConnectedToMaster()
         {
-            Debugger.Log("Ready");
+            Debugger.Log("OnConnectedToMaster");
         }
         public override void OnDisconnected(DisconnectCause cause)
         {
