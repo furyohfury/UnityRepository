@@ -38,13 +38,17 @@ namespace Network
         }
         private void Start()
         {
-            PhotonNetwork.AutomaticallySyncScene = true;         
-            PhotonNetwork.ConnectUsingSettings();
+            Cursor.visible = true;
+            PhotonNetwork.AutomaticallySyncScene = true;  
+            if (!PhotonNetwork.IsConnected)
+            {
+                PhotonNetwork.ConnectUsingSettings();
+            }            
             PhotonNetwork.GameVersion = "1";
-            PhotonNetwork.NickName = "Player" + (PhotonNetwork.CountOfPlayers + 1);
-            Debugger.Log("PhotonNetwork.CountOfPlayers = " + PhotonNetwork.CountOfPlayers);
-            Debugger.Log("PhotonNetwork.CountOfPlayersOnMaster = " + PhotonNetwork.CountOfPlayersOnMaster);
-            Debugger.Log("PhotonNetwork.CountOfPlayersInRooms = " + PhotonNetwork.CountOfPlayersInRooms);
+            PhotonNetwork.NickName = "Player" + Random.Range(1,50);
+            // Debugger.Log("PhotonNetwork.CountOfPlayers = " + PhotonNetwork.CountOfPlayers);
+            // Debugger.Log("PhotonNetwork.CountOfPlayersOnMaster = " + PhotonNetwork.CountOfPlayersOnMaster);
+            // Debugger.Log("PhotonNetwork.CountOfPlayersInRooms = " + PhotonNetwork.CountOfPlayersInRooms);
         }
         
         public override void OnJoinedRoom()
@@ -62,7 +66,7 @@ namespace Network
         }
         public override void OnDisconnected(DisconnectCause cause)
         {
-            Debugger.Log("PUN Basics Tutorial/Launcher: OnDisconnected() was called by PUN with reason" + cause);
+            Debugger.Log("OnDisconnected() was called by PUN with reason" + cause);
         }
         #endregion
     }

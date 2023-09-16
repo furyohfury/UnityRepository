@@ -1,8 +1,6 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using static UnityEngine.InputSystem.InputAction;
-using static Network.GameManager;
 using UnityEditor;
 using UnityEngine.SceneManagement;
 using Photon.Pun;
@@ -23,15 +21,14 @@ namespace Network
         private float _moveSpeed = 5;
         [SerializeField, Range(0, 3)]
         private float _shootDelay = 0.5f;
-        private GameObject _bulletPrefab;
-        private GameObject _playerPrefab;
-        private bool _canShoot = true;
+        [SerializeField]
         private PhotonView _photonView;
+        private bool _canShoot = true;
         private GameManager _gameManager;
         public static GameObject LocalPlayerInstance;
+        #region Unity_Methods
         private void Awake()
         {
-            _photonView = GetComponent<PhotonView>();
             if (_photonView.IsMine)
             {
                 LocalPlayerInstance = gameObject;
@@ -41,29 +38,38 @@ namespace Network
             _controls = new PlayerControls();
             _controls.Enable();
             _charController = GetComponent<CharacterController>();
-            // _bulletPrefab = Resources.Load<GameObject>("Prefabs/Bullet");
-            // _playerPrefab = Resources.Load<GameObject>("Prefabs/Player");
             if (_photonView.IsMine) Instantiate(_camera, transform);
-        }
-        private void Start()
-        {
-
         }
         public override void OnEnable()
         {
             base.OnEnable();
             _controls.ActionMap.Fire.performed += OnFire;
-            // _controls.ActionMap.Quit.performed += OnQuit;
+            _controls.ActionMap.Quit.performed += _gameManager.OnQuit;
         }
+        private void Update()
+        {
+            Movement();
+            CameraMovement();
+        }
+        public override void OnDisable()
+        {
+            base.OnDisable();
+            _controls.ActionMap.Fire.performed -= OnFire;
+            _controls.ActionMap.Quit.performed -= _gameManager.OnQuit;
+        }
+        private void OnDestroy()
+        {
+            _controls.Disable();
+        }
+        #endregion
         #region Shooting
         private void OnFire(CallbackContext context)
         {
-            Debug.Log("FIRE");
-            if (!_canShoot) return;
+            if (!_photonView.IsMine || !_canShoot) return;
+            // Debugger.Log("FIRE");
             GameObject bullet = PhotonNetwork.Instantiate("Bullet", transform.position + transform.right + 2.5f * transform.forward, transform.rotation * Quaternion.Euler(new Vector3(90, 0, 0)));
             Bullet bulletComp = bullet.GetComponent<Bullet>();
-            if (bulletComp == null) Debug.Log("null");
-
+            if (bulletComp == null) Debug.Log("Bullet null");
             _gameManager.AddBullet(bulletComp);
             StartCoroutine(ShootDelaying());
         }
@@ -79,40 +85,12 @@ namespace Network
             _canShoot = true;
         }
         #endregion
-        private void OnQuit(CallbackContext context)
-        {
-            Debug.Log("Quit");
-#if UNITY_EDITOR
-            PhotonNetwork.LeaveRoom();
-            // PhotonNetwork.LoadLevel(0);
-#elif !UNITY_EDITOR && UNITY_STANDALONE_WIN
-            PhotonNetwork.LeaveRoom();
-            // PhotonNetwork.LoadLevel(0);
-#endif
-        }
-        private void Update()
-        {
-            Movement();
-            CameraMovement();
-            // Debug.Log(movement);
-        }
-        public override void OnDisable()
-        {
-            base.OnDisable();
-            _controls.ActionMap.Fire.performed -= OnFire;
-            _controls.ActionMap.Quit.performed -= OnQuit;
-        }
-        private void OnDestroy()
-        {
-            _controls.Disable();
-        }
+        #region Movement
         private void CameraMovement()
         {
             if (!_photonView.IsMine && PhotonNetwork.IsConnected) return;
             Vector2 cameraMove = _controls.ActionMap.CameraMove.ReadValue<Vector2>();
             transform.rotation *= Quaternion.Euler(new Vector3(0, cameraMove.x * Time.deltaTime * _cameraSpeed, 0));
-
-
         }
         private void Movement()
         {
@@ -124,14 +102,16 @@ namespace Network
             _charController.SimpleMove(new Vector3(movement.x, 0, movement.y));
 
         }
+        #endregion
         #region Damaged
         private void OnTriggerEnter(Collider other)
         {
-            if (other.gameObject.TryGetComponent(out Bullet bullet))
+            Debugger.Log("Trigger");
+            if (other.gameObject.TryGetComponent(out Bullet bullet) && _photonView.IsMine)
             {
                 OnDamaged?.Invoke(this, bullet);
             }
-            else if (other.gameObject.TryGetComponent<Killbox>(out _))
+            else if (other.gameObject.TryGetComponent<Killbox>(out _) && _photonView.IsMine)
             {
                 OnDamaged?.Invoke(this, null, true);
             }

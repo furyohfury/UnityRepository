@@ -1,7 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using System.Linq;
 using TMPro;
 
@@ -23,7 +20,7 @@ namespace Network
 #if UNITY_EDITOR
             Debug.Log("\n" + message);
 #elif UNITY_STANDALONE_WIN && !UNITY_EDITOR
-            _console.text += "\n" + message;
+            _console.text = "\n" + message;
 #endif
         }
     }

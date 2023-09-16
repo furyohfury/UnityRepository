@@ -12,9 +12,9 @@ GameObject:
   - component: {fileID: 3051389836599186505}
   - component: {fileID: 3051389836599186504}
   - component: {fileID: 3051389836599186511}
-  - component: {fileID: 3051389836599186510}
   - component: {fileID: 3051389836599186509}
-  - component: {fileID: 801956587636104009}
+  - component: {fileID: 3051389836599186510}
+  - component: {fileID: -7442643787305484569}
   - component: {fileID: -1348602315067702096}
   m_Layer: 0
   m_Name: Player1
@@ -103,23 +103,6 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &3051389836599186510
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3051389836599186499}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4fc50af42b059d747b69ce7d3c31f057, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  <_camera>k__BackingField: {fileID: 1213230091015228855, guid: 4ceed3645084dac4589a2139d862a825, type: 3}
-  _cameraSpeed: 7
-  <Health>k__BackingField: 10
-  _moveSpeed: 17.9
-  _shootDelay: 0.5
 --- !u!143 &3051389836599186509
 CharacterController:
   m_ObjectHideFlags: 0
@@ -138,7 +121,25 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &801956587636104009
+--- !u!114 &3051389836599186510
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3051389836599186499}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fc50af42b059d747b69ce7d3c31f057, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <_camera>k__BackingField: {fileID: 1213230091015228855, guid: 4ceed3645084dac4589a2139d862a825, type: 3}
+  _cameraSpeed: 7
+  <Health>k__BackingField: 10
+  _moveSpeed: 17.9
+  _shootDelay: 0.5
+  _photonView: {fileID: -7442643787305484569}
+--- !u!114 &-7442643787305484569
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

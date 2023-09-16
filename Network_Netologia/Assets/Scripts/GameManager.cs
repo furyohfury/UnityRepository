@@ -1,90 +1,144 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 using Photon.Pun;
 using UnityEngine.SceneManagement;
+using static UnityEngine.InputSystem.InputAction;
 
 namespace Network
 {
     public class GameManager : MonoBehaviourPunCallbacks
     {
-        // public static GameManager Manager;
-        private List<Bullet> _bullets = new();
         [SerializeField, Range(1, 10)]
         private float _bulletSpeed = 3;
         [SerializeField, Range(1, 10)]
         private int _bulletsDamage = 2;
+        private Dictionary<Bullet, Coroutine> _bullets = new();
         private float _bulletsLifeTime = 5f;
-        private Player _player;
-
-        private void Awake()
-        {
-
-        }
+        private Player _localPlayer;
+        // UI
+        [SerializeField]
+        private GameObject _loadingYvi;
+        [SerializeField]
+        private GameObject _loadingText;
+        [SerializeField]
+        private GameObject _losingText;
+        [SerializeField]
+        private GameObject _winningText;
+        #region Unity_Methods
         private void Start()
         {
-            SpawnPlayer();
-            // Player playerComp = player.GetComponent<Player>();
-            // playerComp._camera.targetDisplay = 1;
-        }
-        private void SpawnPlayer()
-        {
-            Vector3 spawnPos = new Vector3(Random.Range(-50f, 50f), 2, Random.Range(-50f, 50f));
-            _player = PhotonNetwork.Instantiate("Player1", spawnPos, Quaternion.identity, 0).GetComponent<Player>();
-        }
-        public override void OnEnable()
-        {
-            base.OnEnable();
-            //todo подписка на ondamaged
+            Debugger.Onstart();
+            StartCoroutine(SpawnPlayer());
         }
         public override void OnDisable()
         {
             base.OnDisable();
-        }
-        public void AddBullet(Bullet bullet)
-        {
-            _bullets.Add(bullet);
-            StartCoroutine(BulletDying(bullet));
-        }
-        private IEnumerator BulletDying(Bullet bullet)
-        {
-            yield return new WaitForSeconds(_bulletsLifeTime);
-            if (bullet.gameObject != null) PhotonNetwork.Destroy(bullet.gameObject);
+            if (_localPlayer != null) _localPlayer.OnDamaged -= PlayerDamaged;
         }
         private void Update()
         {
             BulletsMovement();
-            // Debugger.Log("PhotonNetwork.CountOfPlayers = " + PhotonNetwork.CountOfPlayers);
-            // Debugger.Log("PhotonNetwork.CountOfPlayersOnMaster = " + PhotonNetwork.CountOfPlayersOnMaster);
-            // Debugger.Log("PhotonNetwork.CountOfPlayersInRooms = " + PhotonNetwork.CountOfPlayersInRooms);
+        }
+        #endregion
+
+        #region Bullets
+        public void AddBullet(Bullet bullet)
+        {
+            if (!bullet.photonView.IsMine) return;
+            Coroutine bulletCor = StartCoroutine(BulletDying(bullet));
+            _bullets.Add(bullet, bulletCor);
+        }
+        private IEnumerator BulletDying(Bullet bullet)
+        {
+            yield return new WaitForSeconds(_bulletsLifeTime);
+            if (bullet.gameObject != null || bullet.photonView.IsMine)
+            {
+                DestroyBullet(bullet);
+            }
         }
         private void BulletsMovement()
         {
-            foreach (Bullet bullet in _bullets)
+            foreach (Bullet bullet in _bullets.Keys)
             {
                 if (bullet == null || !bullet.photonView.IsMine) continue;
                 bullet.transform.position += _bulletSpeed * Time.deltaTime * bullet.transform.up;
             }
         }
+        private void DestroyBullet(Bullet bullet)
+        {
+            //todo пули то в чужих словарях
+            StopCoroutine(_bullets[bullet]);
+            _bullets.Remove(bullet);
+            PhotonNetwork.Destroy(bullet.gameObject);
+        }
+        #endregion
+        #region Player
+        private IEnumerator SpawnPlayer()
+        {
+            yield return new WaitForSeconds(3f);
+            _loadingYvi.SetActive(false);
+            _loadingText.SetActive(false);
+            Vector3 spawnPos = new Vector3(Random.Range(-50f, 50f), 2, Random.Range(-50f, 50f));
+            GameObject _playerGO = PhotonNetwork.Instantiate("Player1", spawnPos, Quaternion.identity, 0);
+            _localPlayer = _playerGO.GetComponent<Player>();
+            _localPlayer.OnDamaged += PlayerDamaged;
+            Cursor.visible = false;
+        }
         private void PlayerDamaged(Player player, Bullet bullet, bool isKillbox)
         {
-            if (isKillbox) player.ChangeHP(-player.Health);
+
+            if (isKillbox)
+            {
+                player.ChangeHP(-player.Health);
+                Debugger.Log(player.gameObject.name + " DED");
+            }
             else
             {
-                _bullets.Remove(bullet);
-                Destroy(bullet.gameObject);
+                DestroyBullet(bullet);
                 player.ChangeHP(-_bulletsDamage);
             }
+            Debugger.Log(player.gameObject.name + " have been damaged, his health now is " + player.Health);
             if (player.Health <= 0)
             {
-                Winning(player);
+                StartCoroutine(LosingWinning(player));
             }
         }
-        private void Winning(Player player)
+        private IEnumerator LosingWinning(Player player)
         {
-            //todo
+            if (player == _localPlayer)
+            {
+                if (_localPlayer != null) _localPlayer.OnDamaged -= PlayerDamaged;
+                _localPlayer.enabled = false;
+                _losingText.SetActive(true);
+                _loadingYvi.SetActive(true);
+                yield return new WaitForSeconds(4f);
+                PhotonNetwork.LeaveRoom();
+            }
+            else
+            {
+                if (_localPlayer != null) _localPlayer.OnDamaged -= PlayerDamaged;
+                _localPlayer.enabled = false;
+                _winningText.SetActive(true);
+                yield return new WaitForSeconds(4f);
+                PhotonNetwork.LeaveRoom();
+            }
+        }
+        #endregion        
+        public void OnQuit(CallbackContext context)
+        {
+            Debug.Log("Quit");
+#if UNITY_EDITOR
+            PhotonNetwork.LeaveRoom();
+            // PhotonNetwork.LoadLevel(0);
+#elif !UNITY_EDITOR && UNITY_STANDALONE_WIN
+            PhotonNetwork.LeaveRoom();
+            // PhotonNetwork.LoadLevel(0);
+#endif
         }
         #region Photon_Shit
+
         public override void OnLeftRoom()
         {
             SceneManager.LoadScene(0);
