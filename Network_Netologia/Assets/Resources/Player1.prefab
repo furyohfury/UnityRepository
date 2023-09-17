@@ -139,6 +139,9 @@ MonoBehaviour:
   _moveSpeed: 17.9
   _shootDelay: 0.5
   _photonView: {fileID: -7442643787305484569}
+  _enemyLost: 0
+  _winningText: {fileID: 0}
+  _losingText: {fileID: 0}
 --- !u!114 &-7442643787305484569
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -158,6 +161,7 @@ MonoBehaviour:
   OwnershipTransfer: 0
   observableSearch: 2
   ObservedComponents:
+  - {fileID: 3051389836599186510}
   - {fileID: -1348602315067702096}
   sceneViewId: 0
   InstantiationId: 0

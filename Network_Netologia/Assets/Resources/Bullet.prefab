@@ -114,6 +114,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 794678f2417389047b2f086594527614, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _bulletPhotonView: {fileID: -3417832319097301528}
+  _bulletsLifeTime: 5
+  _bulletSpeed: 10
+  <BulletDamage>k__BackingField: 3
 --- !u!54 &-5245691646001425437
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -146,7 +150,7 @@ MonoBehaviour:
   Group: 0
   prefixField: -1
   Synchronization: 3
-  OwnershipTransfer: 0
+  OwnershipTransfer: 1
   observableSearch: 2
   ObservedComponents:
   - {fileID: 5592297221044292161}

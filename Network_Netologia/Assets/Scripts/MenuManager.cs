@@ -59,14 +59,18 @@ namespace Network
                 PhotonNetwork.LoadLevel("InGame");
             }
         }
+        public override void OnJoinRandomFailed(short returnCode, string message)
+        {
+            Debugger.Log("Not Connected yetm please wait");
+        }
         #region MonoBehaviourPunCallbacks Callbacks
         public override void OnConnectedToMaster()
         {
-            Debugger.Log("OnConnectedToMaster");
+            Debugger.Log("OnConnectedToMaster. Ready to play");
         }
         public override void OnDisconnected(DisconnectCause cause)
         {
-            Debugger.Log("OnDisconnected() was called by PUN with reason" + cause);
+            Debugger.Log("OnDisconnectedwas called with reason" + cause);
         }
         #endregion
     }
