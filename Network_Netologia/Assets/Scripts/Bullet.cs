@@ -11,9 +11,9 @@ namespace Network
         private PhotonView _bulletPhotonView;
         [SerializeField]
         private float _bulletsLifeTime = 5f;
-        [SerializeField, Range(1, 10)]
-        private float _bulletSpeed = 5;
-        [field: SerializeField, Range(1, 10)]
+        [SerializeField, Range(1, 20)]
+        private float _bulletSpeed = 20;
+        [field: SerializeField, Range(1, 20)]
         public int BulletDamage { get; private set; } = 5;
         private Coroutine _dying;
         private void Start()
@@ -31,14 +31,14 @@ namespace Network
         private IEnumerator BulletDying()
         {
             yield return new WaitForSeconds(_bulletsLifeTime);
-            if (gameObject != null && _bulletPhotonView.IsMine)
+            if (gameObject != null && photonView.IsMine)
             {
                 PhotonNetwork.Destroy(gameObject);
             }
         }
         private void BulletMovement()
         {
-            if (gameObject != null && _bulletPhotonView.IsMine)
+            if (gameObject != null && photonView.IsMine)
             {
                 transform.position += _bulletSpeed * Time.deltaTime * transform.up;
             }            
@@ -47,7 +47,7 @@ namespace Network
         {
             if (other.gameObject.TryGetComponent<Player>(out _))
             {
-                Debugger.Log("bullet collision");
+                Debugger.Log("Bullet hit the player " + other.gameObject.name);
                 PhotonNetwork.Destroy(gameObject);
             }
         }

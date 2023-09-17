@@ -133,13 +133,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4fc50af42b059d747b69ce7d3c31f057, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <_camera>k__BackingField: {fileID: 1213230091015228855, guid: 4ceed3645084dac4589a2139d862a825, type: 3}
   _cameraSpeed: 7
-  <Health>k__BackingField: 10
+  Health: 10
   _moveSpeed: 17.9
   _shootDelay: 0.5
-  _photonView: {fileID: -7442643787305484569}
-  _enemyLost: 0
   _winningText: {fileID: 0}
   _losingText: {fileID: 0}
 --- !u!114 &-7442643787305484569

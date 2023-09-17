@@ -44,7 +44,12 @@ namespace Network
         {
             Cursor.visible = true;
             PhotonNetwork.GameVersion = "1";
-            PhotonNetwork.NickName = "Player" + Random.Range(1, 50);
+#if UNITY_EDITOR
+
+            PhotonNetwork.NickName = "Player_Editor";
+#elif !UNITY_EDITOR && UNITY_STANDALONE_WIN
+            PhotonNetwork.NickName = "Player_Build";
+#endif
             if (!PhotonNetwork.IsConnected)
             {
                 PhotonNetwork.ConnectUsingSettings();
@@ -63,7 +68,7 @@ namespace Network
         {
             Debugger.Log("Not Connected yet, please wait");
         }
-        #region MonoBehaviourPunCallbacks Callbacks
+#region MonoBehaviourPunCallbacks Callbacks
         public override void OnConnectedToMaster()
         {
             Debugger.Log("OnConnectedToMaster. Ready to play");
@@ -72,6 +77,6 @@ namespace Network
         {
             Debugger.Log("OnDisconnectedwas called with reason" + cause);
         }
-        #endregion
+#endregion
     }
 }

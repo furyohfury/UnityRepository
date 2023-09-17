@@ -13,15 +13,13 @@ namespace Network
     {
         private float _spawnBorders = 40f;
         private Player _localPlayer;
-        [SerializeField]
         private GameObject _loadingYvi;
-        [SerializeField]
         private GameObject _loadingText;
-        [SerializeField]
         private GameObject _losingText;
-        [SerializeField]
         private GameObject _winningText;
         public static GameManager Instance;
+        private Coroutine _losingCoroutine;
+        private Coroutine _winningCoroutine;
         #region Unity_Methods
         private void Awake()
         {
@@ -30,12 +28,12 @@ namespace Network
         }
         private void Start()
         {
+            _loadingYvi = GameObject.Find("LoadingYvi");
+            _loadingText = GameObject.Find("LoadingText");
+            _winningText = GameObject.Find("WinningText");
+            _losingText = GameObject.Find("LosingText");
             Debugger.Onstart();
             StartCoroutine(SpawnPlayer());
-        }
-        public override void OnDisable()
-        {
-            base.OnDisable();
         }
         #endregion
 
@@ -49,26 +47,60 @@ namespace Network
             _loadingYvi.SetActive(false);
             _loadingText.SetActive(false);
             Vector3 spawnPos = new Vector3(Random.Range(-_spawnBorders, _spawnBorders), 2, Random.Range(-_spawnBorders, _spawnBorders));
-            GameObject _playerGO = PhotonNetwork.Instantiate("Player1", spawnPos, Quaternion.identity, 0);
+            GameObject _playerGO = PhotonNetwork.Instantiate("Player1", spawnPos, Quaternion.identity);
             _localPlayer = _playerGO.GetComponent<Player>();
+            Instantiate(Resources.Load("Camera"), _playerGO.transform);
 #if !UNITY_EDITOR && UNITY_STANDALONE_WIN
             Cursor.visible = false;
 #endif
         }
+        public void PlayerIsDamaged(Player player, Bullet bullet, bool isKillbox = false)
+        {
+            if (isKillbox) player.ChangeHP(-player.Health);
+            else
+            {
+                player.ChangeHP(-bullet.BulletDamage);
+            }
+            if (player.Health <= 0 && player == _localPlayer && _losingCoroutine == null)
+            {
+               _losingCoroutine = StartCoroutine(Losing(player));
+            }
+        }
+        private IEnumerator Losing(Player player)
+        {
+            Debugger.Log("Entered losing coroutine");
+            player._controls.Disable();
+            _losingText.SetActive(true);
+            yield return new WaitForSeconds(3f);
+            LeaveRoom();
+        }
+        public void PlayerHaveWon(Player player)
+        {
+            if (_winningCoroutine == null && player == _localPlayer)
+            {                
+                _winningCoroutine = StartCoroutine(Won(player));
+            }
+        }
+        private IEnumerator Won(Player player)
+        {
+            Debugger.Log("Entered winning coroutine");
+            player._controls.Disable();
+            _winningText.SetActive(true);
+            yield return new WaitForSeconds(3f);
+            LeaveRoom();
+        }
         #endregion
+        #region Public_Methods
         public void OnQuit(CallbackContext context)
         {
             Debug.Log("Quit");
-#if UNITY_EDITOR
-            PhotonNetwork.LeaveRoom();
-#elif !UNITY_EDITOR && UNITY_STANDALONE_WIN
-            PhotonNetwork.LeaveRoom();
-#endif
+            LeaveRoom();
         }
         public void LeaveRoom()
         {
             PhotonNetwork.LeaveRoom();
         }
+        #endregion
         #region Photon_Shit
         public override void OnLeftRoom()
         {
@@ -76,11 +108,11 @@ namespace Network
         }
         public override void OnPlayerEnteredRoom(Photon.Realtime.Player newPlayer)
         {
-            Debugger.Log(newPlayer + " has entered the room");
+            Debugger.Log(newPlayer.NickName + " has entered the room");
         }
         public override void OnPlayerLeftRoom(Photon.Realtime.Player otherPlayer)
         {
-            Debugger.Log(otherPlayer + " left room");
+            Debugger.Log(otherPlayer.NickName + " left room");
         }
         #endregion
     }
