@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace Network
 {
-    public class Player : MonoBehaviourPunCallbacks , IPunObservable
+    public class Player : MonoBehaviourPunCallbacks, IPunObservable
     {
         private PlayerControls _controls;
         private CharacterController _charController;
@@ -27,7 +27,6 @@ namespace Network
         [SerializeField]
         private PhotonView _photonView;
         private bool _canShoot = true;
-        // private GameManager _gameManager;
         public static GameObject LocalPlayerInstance;
         private bool _lost = false;
         [SerializeField]
@@ -38,7 +37,7 @@ namespace Network
         private TextMeshProUGUI _losingText;
         private Coroutine _losingCoroutine;
         private Coroutine _winningCoroutine;
-        private int _enemyHealth;
+        private int _enemyHealth = 10;
         #region Unity_Methods
         private void Awake()
         {
@@ -47,7 +46,6 @@ namespace Network
                 LocalPlayerInstance = gameObject;
             }
             DontDestroyOnLoad(gameObject);
-            // _gameManager = FindObjectOfType<GameManager>();
             _controls = new PlayerControls();
             _controls.Enable();
             _charController = GetComponent<CharacterController>();
@@ -65,12 +63,8 @@ namespace Network
         {
             Movement();
             CameraMovement();
-            // Debugger.Log(OnWon.GetInvocationList().Length);
             if (_enemyLost)
             {
-                // Debugger.Log("OnWON Invoke");
-                // Debugger.Log(OnWon.GetInvocationList());
-                // OnWon?.Invoke();
             }
             Debugger.Log("ismine = " + photonView.IsMine);
         }
@@ -89,11 +83,9 @@ namespace Network
         private void OnFire(CallbackContext context)
         {
             if (!_photonView.IsMine || !_canShoot) return;
-            // Debugger.Log("FIRE");
             GameObject bullet = PhotonNetwork.Instantiate("Bullet", transform.position + transform.right + 2.5f * transform.forward, transform.rotation * Quaternion.Euler(new Vector3(90, 0, 0)));
             Bullet bulletComp = bullet.GetComponent<Bullet>();
             if (bulletComp == null) Debugger.Log("Bullet null");
-            // _gameManager.AddBullet(bulletComp);
             StartCoroutine(ShootDelaying());
         }
         private IEnumerator ShootDelaying()
@@ -111,13 +103,13 @@ namespace Network
         #region Movement
         private void CameraMovement()
         {
-            if (!_photonView.IsMine && PhotonNetwork.IsConnected) return;
+            if (!_photonView.IsMine && PhotonNetwork.IsConnected || _enemyHealth <= 0) return;
             Vector2 cameraMove = _controls.ActionMap.CameraMove.ReadValue<Vector2>();
             transform.rotation *= Quaternion.Euler(new Vector3(0, cameraMove.x * Time.deltaTime * _cameraSpeed, 0));
         }
         private void Movement()
         {
-            if (!_photonView.IsMine && PhotonNetwork.IsConnected) return;
+            if (!_photonView.IsMine && PhotonNetwork.IsConnected || _enemyHealth <= 0) return;
 
             float RotationInRads = (float)(transform.rotation.eulerAngles.y * Mathf.Deg2Rad);
             Vector2 movement = _moveSpeed * _controls.ActionMap.Movement.ReadValue<Vector2>();
@@ -129,44 +121,31 @@ namespace Network
         #region Damaged
         private void OnTriggerEnter(Collider other)
         {
-            // Debugger.Log("Trigger");
             if (other.gameObject.TryGetComponent(out Bullet bullet) && _photonView.IsMine)
             {
                 PlayerDamaged(bullet);
             }
             else if (other.gameObject.TryGetComponent<Killbox>(out _) && _photonView.IsMine)
             {
-                // OnDamaged?.Invoke(this, null, true);
                 PlayerDamaged(null, true);
             }
         }
         public void ChangeHP(int delta)
         {
             Health += delta;
-            // if (Health <= 0) _lost = true;
         }
 
         public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
         {
-            // if (this._enemyLost) return;
             if (stream.IsWriting)
             {
-                // stream.SendNext(_lost);
                 stream.SendNext(Health);
-                // Debugger.Log("Sent lo    st = " + _lost);
             }
             else
             {
                 this._enemyHealth = (int)stream.ReceiveNext();
                 if (this._enemyHealth <= 0 && _winningCoroutine == null) StartCoroutine(Winning());
-                // this._enemyLost = (bool)stream.ReceiveNext();
-                // Debugger.Log("Received enemylost = " + _enemyLost);
-                /* if (_enemyLost && _winningCoroutine == null)
-                {
-                    // Debugger.Log("Invoke OnWon");
-                    // OnWon?.Invoke(this);
-                    _winningCoroutine = StartCoroutine(Winning());
-                } */
+
             }
         }
         private void PlayerDamaged(Bullet bullet, bool isKillbox = false)
@@ -175,12 +154,10 @@ namespace Network
             if (isKillbox)
             {
                 ChangeHP(-Health);
-                // Debugger.Log(player.gameObject.name + " DED");
             }
             else
             {
                 ChangeHP(-bullet.BulletDamage);
-                // PhotonNetwork.Destroy(bullet.gameObject);
             }
             Debugger.Log(gameObject.name + " health  = " + Health);
             if (Health <= 0 && photonView.IsMine && _losingCoroutine == null)
@@ -191,12 +168,6 @@ namespace Network
         private IEnumerator Losing()
         {
             Debugger.Log("Losing");
-            // if (!_photonView.IsMine) yield break;
-            // if (_localPlayer == null) yield break;
-            // _localPlayer.OnDamaged -= PlayerDamaged;
-            // _localPlayer.OnWon -= PlayerWon;
-            // _localPlayer.enabled = false; todo razlochit
-            // Debugger.Log("Photonview.isMine = " + _photonView.IsMine);
             _controls.Disable();
             _losingText.gameObject.SetActive(true);
             yield return new WaitForSeconds(4f);
@@ -207,15 +178,11 @@ namespace Network
         private IEnumerator Winning()
         {
             Debugger.Log("Winning");
-            // if (!_photonView.IsMine) yield break;
-            // _localPlayer.OnDamaged -= PlayerDamaged;
-            // _localPlayer.OnWon -= PlayerWon;
-            // _localPlayer.enabled = false;
             Debugger.Log("Photonview.isMine = " + this.photonView.IsMine);
             _controls.Disable();
             _winningText.gameObject.SetActive(true);
             yield return new WaitForSeconds(4f);
-            GameManager.Instance.LeaveRoom();
+            PhotonNetwork.LeaveRoom();
         }
         #endregion
         public delegate void Damaged(Player player, Bullet bullet, bool isKillbox = false);

@@ -36,32 +36,32 @@ namespace Network
             if (_console.activeSelf) _console.SetActive(false);
             else _console.SetActive(true);
         }
+        private void Awake()
+        {
+            PhotonNetwork.AutomaticallySyncScene = true;
+        }
         private void Start()
         {
             Cursor.visible = true;
-            PhotonNetwork.AutomaticallySyncScene = true;  
+            PhotonNetwork.GameVersion = "1";
+            PhotonNetwork.NickName = "Player" + Random.Range(1, 50);
             if (!PhotonNetwork.IsConnected)
             {
                 PhotonNetwork.ConnectUsingSettings();
             }            
-            PhotonNetwork.GameVersion = "1";
-            PhotonNetwork.NickName = "Player" + Random.Range(1,50);
-            // Debugger.Log("PhotonNetwork.CountOfPlayers = " + PhotonNetwork.CountOfPlayers);
-            // Debugger.Log("PhotonNetwork.CountOfPlayersOnMaster = " + PhotonNetwork.CountOfPlayersOnMaster);
-            // Debugger.Log("PhotonNetwork.CountOfPlayersInRooms = " + PhotonNetwork.CountOfPlayersInRooms);
         }
-        
+
         public override void OnJoinedRoom()
-        {            
+        {
             Debugger.Log("OnJoinedRoom");
-            if (PhotonNetwork.IsMasterClient) //todo mb && PhotonNetwork.CurrentRoom.PlayerCount == 1)
+            if (PhotonNetwork.IsMasterClient && PhotonNetwork.CurrentRoom.PlayerCount == 1)
             {
                 PhotonNetwork.LoadLevel("InGame");
             }
         }
         public override void OnJoinRandomFailed(short returnCode, string message)
         {
-            Debugger.Log("Not Connected yetm please wait");
+            Debugger.Log("Not Connected yet, please wait");
         }
         #region MonoBehaviourPunCallbacks Callbacks
         public override void OnConnectedToMaster()
