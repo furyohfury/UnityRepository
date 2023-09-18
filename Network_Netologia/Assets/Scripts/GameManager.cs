@@ -6,6 +6,8 @@ using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine.SceneManagement;
 using static UnityEngine.InputSystem.InputAction;
+using System.Linq;
+using TMPro;
 
 namespace Network
 {
@@ -13,13 +15,13 @@ namespace Network
     {
         private float _spawnBorders = 40f;
         private Player _localPlayer;
-        private GameObject _loadingYvi;
-        private GameObject _loadingText;
-        private GameObject _losingText;
-        private GameObject _winningText;
+        public GameObject _loadingYvi;
+        public GameObject _loadingText;
+        public GameObject _losingText;
+        public GameObject _winningText;
         public static GameManager Instance;
-        private Coroutine _losingCoroutine;
-        private Coroutine _winningCoroutine;
+        public Coroutine _losingCoroutine;
+        public Coroutine _winningCoroutine;
         #region Unity_Methods
         private void Awake()
         {
@@ -30,8 +32,8 @@ namespace Network
         {
             _loadingYvi = GameObject.Find("LoadingYvi");
             _loadingText = GameObject.Find("LoadingText");
-            _winningText = GameObject.Find("WinningText");
-            _losingText = GameObject.Find("LosingText");
+            _winningText = FindObjectsOfType<TextMeshProUGUI>(true).FirstOrDefault(t => t.name == "WinningText").gameObject;
+            _losingText = FindObjectsOfType<TextMeshProUGUI>(true).FirstOrDefault(t => t.name == "LosingText").gameObject;
             Debugger.Onstart();
             StartCoroutine(SpawnPlayer());
         }
@@ -69,14 +71,15 @@ namespace Network
         private IEnumerator Losing(Player player)
         {
             Debugger.Log("Entered losing coroutine");
-            player._controls.Disable();
+            // player._controls.Disable();
+            _localPlayer._controls.Disable();
             _losingText.SetActive(true);
             yield return new WaitForSeconds(3f);
             LeaveRoom();
         }
         public void PlayerHaveWon(Player player)
         {
-            if (_winningCoroutine == null && player == _localPlayer)
+            if (_winningCoroutine == null)
             {                
                 _winningCoroutine = StartCoroutine(Won(player));
             }
@@ -84,7 +87,8 @@ namespace Network
         private IEnumerator Won(Player player)
         {
             Debugger.Log("Entered winning coroutine");
-            player._controls.Disable();
+            // player._controls.Disable();
+            _localPlayer._controls.Disable();
             _winningText.SetActive(true);
             yield return new WaitForSeconds(3f);
             LeaveRoom();

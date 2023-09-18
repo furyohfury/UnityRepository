@@ -25,6 +25,15 @@ namespace Network
         private TextMeshProUGUI _losingText;
         private GameObject LocalPlayerInstance;
         private int _enemyHealth = 10;
+        public int EnemyHealth
+        {
+            get { return _enemyHealth; }
+            set
+            {
+                if (value > 0) _enemyHealth = value;
+                else GameManager.Instance.PlayerHaveWon(this);
+            }
+        }
         #region Unity_Methods
         private void Awake()
         {
@@ -37,9 +46,9 @@ namespace Network
             _controls.Enable();
             _charController = GetComponent<CharacterController>();
             // if (_photonView.IsMine) Instantiate(_camera, transform);
-            _winningText = FindObjectsOfType<TextMeshProUGUI>(true).FirstOrDefault(t => t.name == "WinningText");
-            _losingText = FindObjectsOfType<TextMeshProUGUI>(true).FirstOrDefault(t => t.name == "LosingText");
-        }
+            // _winningText = FindObjectsOfType<TextMeshProUGUI>(true).FirstOrDefault(t => t.name == "WinningText");
+            // _losingText = FindObjectsOfType<TextMeshProUGUI>(true).FirstOrDefault(t => t.name == "LosingText");
+        }        
         public override void OnEnable()
         {
             base.OnEnable();
@@ -114,9 +123,8 @@ namespace Network
             }
             else
             {
-                _enemyHealth = (int)stream.ReceiveNext();
-            }
-            if (_enemyHealth <= 0) GameManager.Instance.PlayerHaveWon(this);
+                EnemyHealth = (int)stream.ReceiveNext();
+            }            
         }
     }
 }
