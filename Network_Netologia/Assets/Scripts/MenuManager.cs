@@ -75,7 +75,7 @@ namespace Network
         }
         public override void OnDisconnected(DisconnectCause cause)
         {
-            Debugger.Log("OnDisconnectedwas called with reason" + cause);
+            Debugger.Log("OnDisconnected was called with reason" + cause);
         }
 #endregion
     }

@@ -49,28 +49,32 @@ namespace Network
             _loadingYvi.SetActive(false);
             _loadingText.SetActive(false);
             Vector3 spawnPos = new Vector3(Random.Range(-_spawnBorders, _spawnBorders), 2, Random.Range(-_spawnBorders, _spawnBorders));
-            GameObject _playerGO = PhotonNetwork.Instantiate("Player1", spawnPos, Quaternion.identity);
-            _localPlayer = _playerGO.GetComponent<Player>();
-            Instantiate(Resources.Load("Camera"), _playerGO.transform);
+            GameObject playerGO = PhotonNetwork.Instantiate("Player1", spawnPos, Quaternion.identity);
+             
+            _localPlayer = playerGO.GetComponent<Player>();
+            playerGO.name = PhotonNetwork.NickName;
+            Instantiate(Resources.Load("Camera"), playerGO.transform);
 #if !UNITY_EDITOR && UNITY_STANDALONE_WIN
             Cursor.visible = false;
 #endif
         }
         public void PlayerIsDamaged(Player player, Bullet bullet, bool isKillbox = false)
         {
-            if (isKillbox) player.ChangeHP(-player.Health);
-            else
+            if (isKillbox) _localPlayer.ChangeHP(-_localPlayer.Health);
+            else if (!bullet.Hit)
             {
-                player.ChangeHP(-bullet.BulletDamage);
+                _localPlayer.ChangeHP(-bullet.BulletDamage);
+                bullet.Hit = true;
+                Debugger.Log(_localPlayer + " got damaged and has " + _localPlayer.Health);
             }
-            if (player.Health <= 0 && player == _localPlayer && _losingCoroutine == null)
+            if (_localPlayer.Health <= 0 && _losingCoroutine == null)
             {
-               _losingCoroutine = StartCoroutine(Losing(player));
+               _losingCoroutine = StartCoroutine(Losing(_localPlayer));
             }
         }
         private IEnumerator Losing(Player player)
         {
-            Debugger.Log("Entered losing coroutine");
+            // Debugger.Log("Entered losing coroutine");
             // player._controls.Disable();
             _localPlayer._controls.Disable();
             _losingText.SetActive(true);
@@ -86,7 +90,7 @@ namespace Network
         }
         private IEnumerator Won(Player player)
         {
-            Debugger.Log("Entered winning coroutine");
+            // Debugger.Log("Entered winning coroutine");
             // player._controls.Disable();
             _localPlayer._controls.Disable();
             _winningText.SetActive(true);

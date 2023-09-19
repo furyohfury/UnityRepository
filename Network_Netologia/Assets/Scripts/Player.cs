@@ -101,11 +101,14 @@ namespace Network
         #region Damaged
         private void OnTriggerEnter(Collider other)
         {
-            if (other.gameObject.TryGetComponent(out Bullet bullet) && photonView.IsMine)
+            if (!photonView.IsMine) return; //todo разобраться с пулями
+            if (other.gameObject.TryGetComponent(out Bullet bullet))
             {
+                // Debugger.Log(other.gameObject.name);
+
                 GameManager.Instance.PlayerIsDamaged(this, bullet);
             }
-            else if (other.gameObject.TryGetComponent<Killbox>(out _) && photonView.IsMine)
+            else if (other.gameObject.TryGetComponent<Killbox>(out _))
             {
                 GameManager.Instance.PlayerIsDamaged(this, null, true);
             }

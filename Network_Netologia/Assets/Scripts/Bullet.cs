@@ -14,8 +14,9 @@ namespace Network
         [SerializeField, Range(1, 20)]
         private float _bulletSpeed = 20;
         [field: SerializeField, Range(1, 20)]
-        public int BulletDamage { get; private set; } = 5;
+        public int BulletDamage { get; private set; } = 3;
         private Coroutine _dying;
+        public bool Hit = false;
         private void Start()
         {
             _dying = StartCoroutine(BulletDying());
@@ -45,11 +46,19 @@ namespace Network
         }
         private void OnTriggerEnter(Collider other)
         {
-            if (other.gameObject.TryGetComponent<Player>(out _))
+            if (other.gameObject.TryGetComponent<Player>(out _) && photonView.IsMine)
             {
-                Debugger.Log("Bullet hit the player " + other.gameObject.name);
-                PhotonNetwork.Destroy(gameObject);
+                // Debugger.Log("Bullet hit the player " + other.gameObject.name);
+                // PhotonNetwork.Destroy(gameObject);
+                StartCoroutine(DestroyBulletOnCollision());
             }
+        }
+        private IEnumerator DestroyBulletOnCollision()
+        {
+            GetComponent<MeshRenderer>().enabled = false;
+            GetComponent<CapsuleCollider>().enabled = false;
+            yield return new WaitForSeconds(1f);
+            PhotonNetwork.Destroy(gameObject);
         }
     }
 }

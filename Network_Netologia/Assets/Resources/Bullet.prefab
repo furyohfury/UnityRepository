@@ -118,6 +118,7 @@ MonoBehaviour:
   _bulletsLifeTime: 5
   _bulletSpeed: 20
   <BulletDamage>k__BackingField: 3
+  Hit: 0
 --- !u!54 &-5245691646001425437
 Rigidbody:
   m_ObjectHideFlags: 0
