@@ -42,14 +42,12 @@ namespace Network
             if (gameObject != null && photonView.IsMine)
             {
                 transform.position += _bulletSpeed * Time.deltaTime * transform.up;
-            }            
+            }
         }
         private void OnTriggerEnter(Collider other)
         {
             if (other.gameObject.TryGetComponent<Player>(out _) && photonView.IsMine)
             {
-                // Debugger.Log("Bullet hit the player " + other.gameObject.name);
-                // PhotonNetwork.Destroy(gameObject);
                 StartCoroutine(DestroyBulletOnCollision());
             }
         }

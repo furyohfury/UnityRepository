@@ -1,9 +1,7 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using Photon.Pun;
-using System.Linq;
 using static UnityEngine.InputSystem.InputAction;
 namespace Network
 {
@@ -23,7 +21,6 @@ namespace Network
         private TextMeshProUGUI _winningText;
         [SerializeField]
         private TextMeshProUGUI _losingText;
-        private GameObject LocalPlayerInstance;
         private int _enemyHealth = 10;
         public int EnemyHealth
         {
@@ -31,24 +28,17 @@ namespace Network
             set
             {
                 if (value > 0) _enemyHealth = value;
-                else GameManager.Instance.PlayerHaveWon(this);
+                else GameManager.Instance.PlayerHaveWon();
             }
         }
         #region Unity_Methods
         private void Awake()
         {
-            if (photonView.IsMine)
-            {
-                LocalPlayerInstance = gameObject;
-            }
             DontDestroyOnLoad(gameObject);
             _controls = new PlayerControls();
             _controls.Enable();
             _charController = GetComponent<CharacterController>();
-            // if (_photonView.IsMine) Instantiate(_camera, transform);
-            // _winningText = FindObjectsOfType<TextMeshProUGUI>(true).FirstOrDefault(t => t.name == "WinningText");
-            // _losingText = FindObjectsOfType<TextMeshProUGUI>(true).FirstOrDefault(t => t.name == "LosingText");
-        }        
+        }
         public override void OnEnable()
         {
             base.OnEnable();
@@ -101,16 +91,14 @@ namespace Network
         #region Damaged
         private void OnTriggerEnter(Collider other)
         {
-            if (!photonView.IsMine) return; //todo разобраться с пулями
+            if (!photonView.IsMine) return;
             if (other.gameObject.TryGetComponent(out Bullet bullet))
             {
-                // Debugger.Log(other.gameObject.name);
-
-                GameManager.Instance.PlayerIsDamaged(this, bullet);
+                GameManager.Instance.PlayerIsDamaged(bullet);
             }
             else if (other.gameObject.TryGetComponent<Killbox>(out _))
             {
-                GameManager.Instance.PlayerIsDamaged(this, null, true);
+                GameManager.Instance.PlayerIsDamaged(null, true);
             }
         }
         public void ChangeHP(int delta)
@@ -127,7 +115,7 @@ namespace Network
             else
             {
                 EnemyHealth = (int)stream.ReceiveNext();
-            }            
+            }
         }
     }
 }

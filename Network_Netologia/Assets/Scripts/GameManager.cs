@@ -1,7 +1,5 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor;
 using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine.SceneManagement;
@@ -38,10 +36,6 @@ namespace Network
             StartCoroutine(SpawnPlayer());
         }
         #endregion
-
-        #region Bullets       
-
-        #endregion
         #region Player
         private IEnumerator SpawnPlayer()
         {
@@ -50,7 +44,7 @@ namespace Network
             _loadingText.SetActive(false);
             Vector3 spawnPos = new Vector3(Random.Range(-_spawnBorders, _spawnBorders), 2, Random.Range(-_spawnBorders, _spawnBorders));
             GameObject playerGO = PhotonNetwork.Instantiate("Player1", spawnPos, Quaternion.identity);
-             
+
             _localPlayer = playerGO.GetComponent<Player>();
             playerGO.name = PhotonNetwork.NickName;
             Instantiate(Resources.Load("Camera"), playerGO.transform);
@@ -58,7 +52,7 @@ namespace Network
             Cursor.visible = false;
 #endif
         }
-        public void PlayerIsDamaged(Player player, Bullet bullet, bool isKillbox = false)
+        public void PlayerIsDamaged(Bullet bullet, bool isKillbox = false)
         {
             if (isKillbox) _localPlayer.ChangeHP(-_localPlayer.Health);
             else if (!bullet.Hit)
@@ -69,29 +63,25 @@ namespace Network
             }
             if (_localPlayer.Health <= 0 && _losingCoroutine == null)
             {
-               _losingCoroutine = StartCoroutine(Losing(_localPlayer));
+                _losingCoroutine = StartCoroutine(Losing());
             }
         }
-        private IEnumerator Losing(Player player)
+        private IEnumerator Losing()
         {
-            // Debugger.Log("Entered losing coroutine");
-            // player._controls.Disable();
             _localPlayer._controls.Disable();
             _losingText.SetActive(true);
             yield return new WaitForSeconds(3f);
             LeaveRoom();
         }
-        public void PlayerHaveWon(Player player)
+        public void PlayerHaveWon()
         {
             if (_winningCoroutine == null)
-            {                
-                _winningCoroutine = StartCoroutine(Won(player));
+            {
+                _winningCoroutine = StartCoroutine(Won());
             }
         }
-        private IEnumerator Won(Player player)
+        private IEnumerator Won()
         {
-            // Debugger.Log("Entered winning coroutine");
-            // player._controls.Disable();
             _localPlayer._controls.Disable();
             _winningText.SetActive(true);
             yield return new WaitForSeconds(3f);
@@ -109,7 +99,7 @@ namespace Network
             PhotonNetwork.LeaveRoom();
         }
         #endregion
-        #region Photon_Shit
+        #region Photon_Stuff
         public override void OnLeftRoom()
         {
             SceneManager.LoadScene(0);

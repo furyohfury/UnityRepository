@@ -1,11 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEditor;
 using Photon.Pun;
-using UnityEngine.UI;
-using TMPro;
 using Photon.Realtime;
 
 namespace Network
@@ -53,7 +48,7 @@ namespace Network
             if (!PhotonNetwork.IsConnected)
             {
                 PhotonNetwork.ConnectUsingSettings();
-            }            
+            }
         }
 
         public override void OnJoinedRoom()
@@ -68,7 +63,7 @@ namespace Network
         {
             Debugger.Log("Not Connected yet, please wait");
         }
-#region MonoBehaviourPunCallbacks Callbacks
+        #region MonoBehaviourPunCallbacks Callbacks
         public override void OnConnectedToMaster()
         {
             Debugger.Log("OnConnectedToMaster. Ready to play");
@@ -77,6 +72,6 @@ namespace Network
         {
             Debugger.Log("OnDisconnected was called with reason" + cause);
         }
-#endregion
+        #endregion
     }
 }
