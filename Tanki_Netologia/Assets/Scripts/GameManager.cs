@@ -8,8 +8,16 @@ namespace Tanks
     public class GameManager : MonoBehaviour
     {
         public static GameManager Instance;
-        public List<Bullet> _bullets = new();
-        public List<EnemyController> _enemies = new();
+        [SerializeField]
+        private GameObject _enemyPrefab;
+        private PlayerController _player;
+        private List<Bullet> _bullets = new();
+        private List<EnemyController> _enemies = new();
+        [SerializeField]
+        private EnemySpawn[] _enemySpawns;
+        [SerializeField, Range (0, 5f)]
+        private float _invulPlayerTime = 3f;
+
         #region Unity_Methods
         private void Awake()
         {
@@ -23,6 +31,27 @@ namespace Tanks
             Debug.Log(playerTank as EnemyController != null);
             Debug.Log(playerTank.GetType()); */
 
+        }
+        private void Start()
+        {
+            StartCoroutine(SpawnEnemies());
+            _player = FindObjectOfType<PlayerController>();
+        }
+        private IEnumerator SpawnEnemies()
+        {
+            int i = 0;
+            for (int i = 0; i < _enemySpawns.Length; +i++)
+            {
+                // Р’С‹Р±РѕСЂ СЂР°РЅРґРѕРјРЅРѕР№ С‚РѕС‡РєРё СЃРїР°СѓРЅР°
+                EnemySpawn randomSpawnPoint = _enemySpawns[Random.Range(0, _enemySpawns.Length)];
+                while (!randomSpawnPoint.isBusy)
+                {
+                    randomSpawnPoint = _enemySpawns[Random.Range(0, _enemySpawns.Length)];
+                }
+                // РЎРїР°СѓРЅ РїСЂРѕС‚РёРІРЅРёРєР°
+                GameObject newEnemy = Instantiate(_enemyPrefab, randomSpawnPoint.transform.position, Quaternion.identity);   
+                _enemies.Add(newEnemy.GetComponent<EnemyController>());             
+            }
         }
         private void Update()
         {
@@ -52,22 +81,17 @@ namespace Tanks
         private void ChangeTankHP(Tank tank, Bullet bullet)
         {
             tank.ChangeHealth(-bullet.bulletData.Damage);
-            if (tank.Health > 0) return;
-            // Подбит игрок
-            if (tank.GetType() == typeof(PlayerController))
+            // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+            if (tank as PlayerController != null &&  !((PlayerController)tank).Invulnerable)
             {
-                StartCoroutine(PlayerGotDamaged());
+                _player.PlayerGotDamaged();
             }
-            // Подбит враг
-            else if (tank.GetType() == typeof(EnemyController))
+            // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+            else
             {
                 _enemies.Remove(tank as EnemyController);
                 Destroy(tank.gameObject);
             }
-        }
-        private IEnumerator PlayerGotDamaged()
-        {
-            yield return null;
         }
         private void BulletMovement()
         {

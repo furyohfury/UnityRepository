@@ -9,6 +9,8 @@ namespace Tanks
     {
         private PlayerControls _controls;
         private bool _canShoot = true;
+        public Vector2 StartPosition {get; private set;}
+        public bool Invulnerable {get; private set;} = false;
         #region Unity_Methods
         protected override void Awake()
         {
@@ -22,7 +24,7 @@ namespace Tanks
         }
         private void Start()
         {
-
+            StartPosition = (Vector2) transform.position;
         }
         private void Update()
         {
@@ -37,6 +39,12 @@ namespace Tanks
         {
             _controls.PlayerMap.Shoot.performed -= OnShoot;
             _controls.Dispose();
+        }
+        #endregion
+        #region 
+        public void SetInvulnerability(bool isInvulnerable)
+        {
+            Invulnerable = isInvulnerable;
         }
         #endregion
         #region Movement
@@ -63,5 +71,16 @@ namespace Tanks
             _canShoot = true;
         }
         #endregion
+        public void PlayerGotDamaged()
+        {
+            if (Health > 0)
+            {
+                //todo blink and move to center
+            }
+            else 
+            {
+                //todo losing
+            }
+        }
     }
 }
