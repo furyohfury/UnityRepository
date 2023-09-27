@@ -28,6 +28,7 @@ namespace Tanks {
         protected Sprite _leftView;
         [SerializeField]
         protected Sprite _rightView;
+        protected Sprite _activeSprite;
         [SerializeField]
         protected GameObject _bullet;
         #region Unity_Methods
@@ -38,10 +39,11 @@ namespace Tanks {
         }
         protected virtual void FixedUpdate()
         {
-            if (_rigidBody.velocity.x > 0 && _spriteRenderer.sprite != _rightView) _spriteRenderer.sprite = _rightView;
-            else if (_rigidBody.velocity.x < 0 && _spriteRenderer.sprite != _leftView) _spriteRenderer.sprite = _leftView;
-            else if (_rigidBody.velocity.y > 0 && _spriteRenderer.sprite != _upView) _spriteRenderer.sprite = _upView;
-            else if (_rigidBody.velocity.y < 0 && _spriteRenderer.sprite != _downView) _spriteRenderer.sprite = _downView;
+            if (_rigidBody.velocity.x > 0) _activeSprite = _rightView;
+            else if (_rigidBody.velocity.x < 0) _activeSprite = _leftView;
+            else if (_rigidBody.velocity.y > 0) _activeSprite = _upView;
+            else if (_rigidBody.velocity.y < 0) _activeSprite = _downView;
+            _spriteRenderer.sprite = _activeSprite;
             if (_rigidBody.velocity != Vector2.zero)
             {
                 _direction = _rigidBody.velocity;

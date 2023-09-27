@@ -13,10 +13,13 @@ namespace Tanks
         private PlayerController _player;
         private List<Bullet> _bullets = new();
         private List<EnemyController> _enemies = new();
-        [SerializeField]
         private EnemySpawn[] _enemySpawns;
         [SerializeField, Range (0, 5f)]
         private float _invulPlayerTime = 3f;
+        [SerializeField, Range(0, 10)]
+        private int _numberOfEnemies = 3;
+        [SerializeField, Range(0, 30f)]
+        private float _enemySpawnInterval = 5f;
 
         #region Unity_Methods
         private void Awake()
@@ -34,23 +37,24 @@ namespace Tanks
         }
         private void Start()
         {
-            StartCoroutine(SpawnEnemies());
             _player = FindObjectOfType<PlayerController>();
+            _enemySpawns = FindObjectsOfType<EnemySpawn>();
+            StartCoroutine(SpawnEnemies());            
         }
         private IEnumerator SpawnEnemies()
         {
-            int i = 0;
-            for (int i = 0; i < _enemySpawns.Length; +i++)
+            for (int i = 0; i < _numberOfEnemies; i++)
             {
                 // Выбор рандомной точки спауна
-                EnemySpawn randomSpawnPoint = _enemySpawns[Random.Range(0, _enemySpawns.Length)];
+                EnemySpawn randomSpawnPoint = _enemySpawns[UnityEngine.Random.Range(0, _enemySpawns.Length)];
                 while (!randomSpawnPoint.isBusy)
                 {
-                    randomSpawnPoint = _enemySpawns[Random.Range(0, _enemySpawns.Length)];
+                    randomSpawnPoint = _enemySpawns[UnityEngine.Random.Range(0, _enemySpawns.Length)];
                 }
                 // Спаун противника
                 GameObject newEnemy = Instantiate(_enemyPrefab, randomSpawnPoint.transform.position, Quaternion.identity);   
-                _enemies.Add(newEnemy.GetComponent<EnemyController>());             
+                _enemies.Add(newEnemy.GetComponent<EnemyController>());
+                yield return new WaitForSeconds(_enemySpawnInterval);
             }
         }
         private void Update()
@@ -81,12 +85,12 @@ namespace Tanks
         private void ChangeTankHP(Tank tank, Bullet bullet)
         {
             tank.ChangeHealth(-bullet.bulletData.Damage);
-            // ������ �����
+            // Player hit
             if (tank as PlayerController != null &&  !((PlayerController)tank).Invulnerable)
             {
-                _player.PlayerGotDamaged();
+                _player.PlayerGotDamaged(_invulPlayerTime);
             }
-            // ������ ����
+            // Enemy hit
             else
             {
                 _enemies.Remove(tank as EnemyController);

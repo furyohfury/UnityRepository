@@ -7,12 +7,7 @@ namespace Tanks
 {
     public class EnemySpawn : MonoBehaviour 
     {
-        private BoxCollider2D _spawnCollider;
         public bool isBusy = false;
-        private Awake()
-        {
-            _spawnCollider = GetComponent<BoxCollider2D>();
-        }
         private void OnTriggerEnter2D(Collider2D other)
         {
             if (other.TryGetComponent(out Tank _)) isBusy = true;

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static UnityEngine.InputSystem.InputAction;
+using UnityEditor;
 
 namespace Tanks
 {
@@ -11,6 +12,9 @@ namespace Tanks
         private bool _canShoot = true;
         public Vector2 StartPosition {get; private set;}
         public bool Invulnerable {get; private set;} = false;
+        public bool testblink = false;
+        [SerializeField]
+        private Animation _blinkingAnimation; 
         #region Unity_Methods
         protected override void Awake()
         {
@@ -24,11 +28,16 @@ namespace Tanks
         }
         private void Start()
         {
-            StartPosition = (Vector2) transform.position;
+            StartPosition = transform.position;
+            _blinkingAnimation = GetComponent<Animation>();
         }
         private void Update()
         {
-
+            if (testblink)
+            {
+                StartCoroutine(Blinking(3));
+                testblink = false;
+            }
         }
         protected override void FixedUpdate()
         {
@@ -71,16 +80,29 @@ namespace Tanks
             _canShoot = true;
         }
         #endregion
-        public void PlayerGotDamaged()
+        #region Damaged
+        public void PlayerGotDamaged(float invulTime)
         {
             if (Health > 0)
             {
-                //todo blink and move to center
+                transform.position = StartPosition;
+                StartCoroutine(Blinking(invulTime));
             }
             else 
             {
-                //todo losing
+#if UNITY_EDITOR
+                EditorApplication.isPaused = true;
+#endif
             }
         }
+        private IEnumerator Blinking(float invulTime)
+        {
+            Invulnerable = true;
+            _blinkingAnimation.enabled = true;
+            yield return new WaitForSeconds(invulTime);
+            Invulnerable = false;
+            _blinkingAnimation.enabled = false;
+        }
+        #endregion
     }
 }
