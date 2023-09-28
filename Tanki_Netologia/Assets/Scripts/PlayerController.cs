@@ -14,7 +14,12 @@ namespace Tanks
         public bool Invulnerable {get; private set;} = false;
         public bool testblink = false;
         [SerializeField]
-        private Animation _blinkingAnimation; 
+        private Animation _blinkingAnimation;
+        [SerializeField]
+        private Sprite[] _blinkDirectionSprites = new Sprite[4];
+        private Dictionary<Vector2, Sprite> _blinkDirectionDict;
+        [SerializeField]
+        private float _blinkInterval = 0.5f;
         #region Unity_Methods
         protected override void Awake()
         {
@@ -30,6 +35,7 @@ namespace Tanks
         {
             StartPosition = transform.position;
             _blinkingAnimation = GetComponent<Animation>();
+            _blinkDirectionDict = new() { { Vector2.up, _blinkDirectionSprites[0] }, { Vector2.down, _blinkDirectionSprites[1] }, { Vector2.left, _blinkDirectionSprites[2] }, { Vector2.right, _blinkDirectionSprites[3] } };
         }
         private void Update()
         {
@@ -50,12 +56,10 @@ namespace Tanks
             _controls.Dispose();
         }
         #endregion
-        #region 
         public void SetInvulnerability(bool isInvulnerable)
         {
             Invulnerable = isInvulnerable;
         }
-        #endregion
         #region Movement
         private void Movement()
         {
@@ -93,15 +97,28 @@ namespace Tanks
 #if UNITY_EDITOR
                 EditorApplication.isPaused = true;
 #endif
+                //todo lose
             }
         }
         private IEnumerator Blinking(float invulTime)
         {
+            float time = 0;
+            float blinkTime = 0;
             Invulnerable = true;
-            _blinkingAnimation.enabled = true;
-            yield return new WaitForSeconds(invulTime);
+            _directionDict = _blinkDirectionDict;
+            while (time < invulTime)
+            {                                             
+                _spriteRenderer.sprite = _directionDict[_direction];                
+                time += Time.deltaTime;
+                blinkTime += Time.deltaTime;
+                if (blinkTime > _blinkInterval)
+                {
+                    _directionDict = _directionDict == _defaultDirectionDict ? _blinkDirectionDict : _defaultDirectionDict;
+                    blinkTime = 0;                    
+                }
+                yield return null;
+            }
             Invulnerable = false;
-            _blinkingAnimation.enabled = false;
         }
         #endregion
     }

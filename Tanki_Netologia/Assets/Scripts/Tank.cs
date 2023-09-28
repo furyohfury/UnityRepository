@@ -28,18 +28,39 @@ namespace Tanks {
         protected Sprite _leftView;
         [SerializeField]
         protected Sprite _rightView;
+        [SerializeField]
+        protected Sprite[] _defaultDirectionSprites = new Sprite[4];
         protected Sprite _activeSprite;
         [SerializeField]
         protected GameObject _bullet;
+        protected Dictionary<Vector2, Sprite> _directionDict;
+        protected Dictionary<Vector2, Sprite> _defaultDirectionDict;
+        protected virtual Vector2 Direction { 
+            get
+            {
+                return _direction;
+            }
+            set
+            {
+                if (_direction != value && value != Vector2.zero)
+                {
+                    _direction = Vector2.ClampMagnitude(value, 1f);
+                    Debug.Log(_direction);
+                    _spriteRenderer.sprite = _directionDict[_direction];
+                }
+            }
+        }
         #region Unity_Methods
         protected virtual void Awake()
         {
             _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
             _rigidBody = GetComponent<Rigidbody2D>();
+            _defaultDirectionDict = new(){ { Vector2.up, _defaultDirectionSprites[0] }, { Vector2.down, _defaultDirectionSprites[1] }, { Vector2.left, _defaultDirectionSprites[2] }, { Vector2.right, _defaultDirectionSprites[3] } };
+            _directionDict = _defaultDirectionDict;
         }
         protected virtual void FixedUpdate()
         {
-            if (_rigidBody.velocity.x > 0) _activeSprite = _rightView;
+            /* if (_rigidBody.velocity.x > 0) _activeSprite = _rightView;
             else if (_rigidBody.velocity.x < 0) _activeSprite = _leftView;
             else if (_rigidBody.velocity.y > 0) _activeSprite = _upView;
             else if (_rigidBody.velocity.y < 0) _activeSprite = _downView;
@@ -47,7 +68,8 @@ namespace Tanks {
             if (_rigidBody.velocity != Vector2.zero)
             {
                 _direction = _rigidBody.velocity;
-            }
+            } */
+            Direction = _rigidBody.velocity;
         }
         #endregion
         protected void Shoot()
