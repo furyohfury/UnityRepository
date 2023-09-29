@@ -106,18 +106,21 @@ namespace Tanks
             float blinkTime = 0;
             Invulnerable = true;
             _directionDict = _blinkDirectionDict;
+            _spriteRenderer.sprite = _directionDict[_direction];
             while (time < invulTime)
-            {                                             
-                _spriteRenderer.sprite = _directionDict[_direction];                
+            {                                                                             
                 time += Time.deltaTime;
                 blinkTime += Time.deltaTime;
                 if (blinkTime > _blinkInterval)
                 {
                     _directionDict = _directionDict == _defaultDirectionDict ? _blinkDirectionDict : _defaultDirectionDict;
+                    _spriteRenderer.sprite = _directionDict[_direction];
                     blinkTime = 0;                    
                 }
                 yield return null;
             }
+            _directionDict = _defaultDirectionDict;
+            _spriteRenderer.sprite = _directionDict[_direction];
             Invulnerable = false;
         }
         #endregion
