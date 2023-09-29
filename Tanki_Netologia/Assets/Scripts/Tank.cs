@@ -34,7 +34,7 @@ namespace Tanks {
             {
                 if (value != _direction && value != Vector2.zero)
                 {
-                    _direction = Vector2.ClampMagnitude(value, 1f);
+                    _direction = Vector2.Normalize(value);
                     Debug.Log(_direction);
                     _spriteRenderer.sprite = _directionDict[_direction];
                 }
