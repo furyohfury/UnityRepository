@@ -68,6 +68,10 @@ namespace Tanks
             _bullets.Add(bullet);
             bullet.OnBulletHit += BulletHit;
         }
+        public Vector2 GetPlayerPosition()
+        {
+            return _player.transform.position;
+        }
         #endregion
         #region Private_Methods
         private void BulletHit(object sender, Bullet.BulletEventArgs e)

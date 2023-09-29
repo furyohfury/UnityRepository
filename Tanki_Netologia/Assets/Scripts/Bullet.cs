@@ -13,6 +13,15 @@ namespace Tanks
             {
                 OnBulletHit?.Invoke(this, new BulletEventArgs(tank));
             }            
+            else if (collision.gameObject.TryGetComponent(out Wall _))
+            {
+                Destroy(gameObject);
+            }
+            else if (collision.gameObject.TryGetComponent(out DestructibleWall _))
+            {
+                Destroy(collision.gameObject);
+                Destroy(gameObject);
+            }
         }
         public class BulletEventArgs : EventArgs
         {

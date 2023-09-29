@@ -6,6 +6,10 @@ namespace Tanks
     public class EnemyController : Tank
     {
         Coroutine _shootingCor;
+        [SerializeField]
+        private float _movingForwardTime;
+        private Vector2 _enemyDirection;
+        #region Unity_Methods
         private void Start()
         {
             _shootingCor = StartCoroutine(RepeatShooting());
@@ -22,5 +26,19 @@ namespace Tanks
         {
             StopCoroutine(_shootingCor);
         }
+        #endregion
+        #region CheckingAI
+        #endregion
+        #region ActionsAI
+        private void MoveForward()
+        {
+            StartCoroutine(MoveForwardForTime());
+        }
+        private IEnumerator MoveForwardForTime()
+        {
+            _rigidbody.velocity = _enemyDirection * _moveSpeed;
+            yield return new WaitForSeconds(_movingForwardTime);
+        }
+        #endregion
     }
 }

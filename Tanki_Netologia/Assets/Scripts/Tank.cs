@@ -14,20 +14,9 @@ namespace Tanks {
         protected float AttackSpeed { get; private set; } = 0.5f;
         [field: SerializeField]
         public int Damage { get; private set; } = 1;
-        protected float BulletSpeed { get; private set; } = 2f;
-        protected Vector2 _direction;
-
-
+        protected float BulletSpeed { get; private set; } = 2f;     
         protected Rigidbody2D _rigidBody;
         protected SpriteRenderer _spriteRenderer;
-        [SerializeField]
-        protected Sprite _upView;
-        [SerializeField]
-        protected Sprite _downView;
-        [SerializeField]
-        protected Sprite _leftView;
-        [SerializeField]
-        protected Sprite _rightView;
         [SerializeField]
         protected Sprite[] _defaultDirectionSprites = new Sprite[4];
         protected Sprite _activeSprite;
@@ -35,6 +24,7 @@ namespace Tanks {
         protected GameObject _bullet;
         protected Dictionary<Vector2, Sprite> _directionDict;
         protected Dictionary<Vector2, Sprite> _defaultDirectionDict;
+        protected Vector2 _direction = Vector2.zero;
         protected virtual Vector2 Direction { 
             get
             {
@@ -42,7 +32,7 @@ namespace Tanks {
             }
             set
             {
-                if (_direction != value && value != Vector2.zero)
+                if (value != _direction && value != Vector2.zero)
                 {
                     _direction = Vector2.ClampMagnitude(value, 1f);
                     Debug.Log(_direction);
