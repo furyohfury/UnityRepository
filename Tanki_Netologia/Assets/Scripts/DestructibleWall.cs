@@ -1,2 +1,5 @@
 using UnityEngine;
-public class DestructibleWall : MonoBehaviour {}
+namespace Tanks
+{
+    public class DestructibleWall : MonoBehaviour { }
+}

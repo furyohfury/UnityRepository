@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Tanks
@@ -10,6 +11,7 @@ namespace Tanks
         public static GameManager Instance;
         [SerializeField]
         private GameObject _enemyPrefab;
+        [SerializeField]
         private PlayerController _player;
         private List<Bullet> _bullets = new();
         private List<EnemyController> _enemies = new();
@@ -26,6 +28,7 @@ namespace Tanks
         {
             if (Instance == null) Instance = this;
             else Destroy(this);
+            _player = FindObjectOfType<PlayerController>();
             /* Debug.Log(typeof(PlayerController) == typeof(Tank));
             // Debug.Log(typeof(PlayerController) == typeof(EnemyController));
             PlayerController player = FindObjectOfType<PlayerController>();
@@ -36,10 +39,9 @@ namespace Tanks
 
         }
         private void Start()
-        {
-            _player = FindObjectOfType<PlayerController>();
+        {            
             _enemySpawns = FindObjectsOfType<EnemySpawn>();
-            StartCoroutine(SpawnEnemies());            
+            // StartCoroutine(SpawnEnemies());            
         }
         private IEnumerator SpawnEnemies()
         {
@@ -70,21 +72,35 @@ namespace Tanks
         }
         public Vector2 GetPlayerPosition()
         {
-            return _player.transform.position;
+            return (Vector2)_player.gameObject.transform.position;
         }
         #endregion
         #region Private_Methods
         private void BulletHit(object sender, Bullet.BulletEventArgs e)
         {
             Bullet bullet = (Bullet)sender;
-            Tank collidedTank = e.collidedTank;
-            if (bullet.bulletData.Owner.GetType() != collidedTank.GetType())
+            if (e.CollidedTank != null)
             {
-                ChangeTankHP(collidedTank, bullet);
+                Tank collidedTank = e.CollidedTank;
+                if (bullet.bulletData.Owner.GetType() != collidedTank.GetType())
+                {
+                    ChangeTankHP(collidedTank, bullet);
+                    _bullets.Remove(bullet);
+                    Destroy(bullet.gameObject);
+                }
+            }
+            else if (e.DestructedWall != null)
+            {
+                Destroy(e.DestructedWall);
                 _bullets.Remove(bullet);
                 Destroy(bullet.gameObject);
             }
-
+            else
+            {
+                _bullets.Remove(bullet);
+                Destroy(bullet.gameObject);
+            }
+            
         }
         private void ChangeTankHP(Tank tank, Bullet bullet)
         {
@@ -97,13 +113,14 @@ namespace Tanks
             // Enemy hit
             else
             {
+                if (tank.Health <= 0)
                 _enemies.Remove(tank as EnemyController);
                 Destroy(tank.gameObject);
             }
         }
         private void BulletMovement()
         {
-            foreach(Bullet bullet in _bullets)
+            foreach(Bullet bullet in _bullets.ToList())
             {
                 bullet.transform.position += bullet.bulletData.Speed * Time.deltaTime * bullet.transform.right;
             }

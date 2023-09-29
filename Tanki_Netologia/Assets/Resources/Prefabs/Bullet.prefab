@@ -10,8 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 132257556750892363}
   - component: {fileID: 2627499804687713523}
+  - component: {fileID: 2241149485502872749}
   - component: {fileID: 1609832336108123998}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Bullet
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -60,6 +61,27 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.5030198, y: 0.40835685}
   m_EdgeRadius: 0
+--- !u!50 &2241149485502872749
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 64892564588804960}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
 --- !u!114 &1609832336108123998
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -82,7 +104,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8381664018258210135}
   - component: {fileID: 777247189758197896}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Capsule
   m_TagString: Untagged
   m_Icon: {fileID: 0}

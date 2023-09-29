@@ -34,9 +34,10 @@ namespace Tanks {
             {
                 if (value != _direction && value != Vector2.zero)
                 {
-                    _direction = Vector2.Normalize(value);
+                    value.Normalize();
+                    _direction = value;
                     Debug.Log(_direction);
-                    _spriteRenderer.sprite = _directionDict[_direction];
+                    _spriteRenderer.sprite = _directionDict[value];
                 }
             }
         }
@@ -68,7 +69,7 @@ namespace Tanks {
             bulletComp.bulletData = new(Damage, BulletSpeed, this);
             GameManager.Instance.AddBullet(bulletComp);
         }
-        public void ChangeHealth(int delta)
+        public virtual void ChangeHealth(int delta)
         {
             Health += delta;
         }

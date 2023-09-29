@@ -1,3 +1,5 @@
 using UnityEngine;
-
-public class Wall : MonoBehaviour {}
+namespace Tanks
+{
+    public class Wall : MonoBehaviour { }
+}
