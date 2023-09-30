@@ -307,7 +307,7 @@ MonoBehaviour:
   - {fileID: 1437850116, guid: eee2acede98668b4da7aa181033759d2, type: 3}
   _bullet: {fileID: 64892564588804960, guid: e74fd5c4f414b0445ac6322835175d66, type: 3}
   _movingForwardTime: 3
-  _checkingCollider: {fileID: 0}
+  _checkingCollider: {fileID: 930460200}
   _inFrontGO: {fileID: 0}
 --- !u!50 &930460197
 Rigidbody2D:

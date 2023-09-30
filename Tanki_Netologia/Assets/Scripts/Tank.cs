@@ -1,7 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-namespace Tanks {
+namespace Tanks
+{
 
     [RequireComponent(typeof(Rigidbody2D))]
     public class Tank : MonoBehaviour
@@ -14,7 +15,7 @@ namespace Tanks {
         protected float AttackSpeed { get; private set; } = 0.5f;
         [field: SerializeField]
         public int Damage { get; private set; } = 1;
-        protected float BulletSpeed { get; private set; } = 2f;     
+        protected float BulletSpeed { get; private set; } = 2f;
         protected Rigidbody2D _rigidBody;
         protected SpriteRenderer _spriteRenderer;
         [SerializeField]
@@ -25,7 +26,8 @@ namespace Tanks {
         protected Dictionary<Vector2, Sprite> _directionDict;
         protected Dictionary<Vector2, Sprite> _defaultDirectionDict;
         protected Vector2 _direction = Vector2.zero;
-        protected virtual Vector2 Direction { 
+        protected virtual Vector2 Direction
+        {
             get
             {
                 return _direction;
@@ -36,8 +38,12 @@ namespace Tanks {
                 {
                     value.Normalize();
                     _direction = value;
-                    Debug.Log(_direction);
-                    _spriteRenderer.sprite = _directionDict[value];
+                    // Debug.Log(_direction);
+                    if (_directionDict.ContainsKey(_direction))
+                    {
+                        _spriteRenderer.sprite = _directionDict[_direction];
+                    }
+                    else Debug.Log("No key + " + _direction + " in dict");
                 }
             }
         }
@@ -46,7 +52,7 @@ namespace Tanks {
         {
             _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
             _rigidBody = GetComponent<Rigidbody2D>();
-            _defaultDirectionDict = new(){ { Vector2.up, _defaultDirectionSprites[0] }, { Vector2.down, _defaultDirectionSprites[1] }, { Vector2.left, _defaultDirectionSprites[2] }, { Vector2.right, _defaultDirectionSprites[3] } };
+            _defaultDirectionDict = new() { { Vector2.up, _defaultDirectionSprites[0] }, { Vector2.down, _defaultDirectionSprites[1] }, { Vector2.left, _defaultDirectionSprites[2] }, { Vector2.right, _defaultDirectionSprites[3] } };
             _directionDict = _defaultDirectionDict;
         }
         protected virtual void FixedUpdate()
