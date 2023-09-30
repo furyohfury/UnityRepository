@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 namespace Tanks
 {
@@ -41,7 +42,8 @@ namespace Tanks
         private void Start()
         {            
             _enemySpawns = FindObjectsOfType<EnemySpawn>();
-            // StartCoroutine(SpawnEnemies());            
+            // Начало спауан противников
+            StartCoroutine(SpawnEnemies());            
         }
         private IEnumerator SpawnEnemies()
         {
@@ -91,7 +93,10 @@ namespace Tanks
             }
             else if (e.DestructedWall != null)
             {
-                Destroy(e.DestructedWall);
+                // Destroy(e.DestructedWall.gameObject);
+                // Destroy(e.collision.gameObject);
+                // Debug.Log(hitCellPosition);
+                e.Tilemap.SetTile(e.Tilemap.WorldToCell(e.HitPoint), null);
                 _bullets.Remove(bullet);
                 Destroy(bullet.gameObject);
             }

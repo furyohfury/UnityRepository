@@ -23,8 +23,8 @@ namespace Tanks
         protected Sprite _activeSprite;
         [SerializeField]
         protected GameObject _bullet;
-        protected Dictionary<Vector2, Sprite> _directionDict;
-        protected Dictionary<Vector2, Sprite> _defaultDirectionDict;
+        protected Dictionary<Directions, Sprite> _directionDict;
+        protected Dictionary<Directions, Sprite> _defaultDirectionDict;
         protected Vector2 _direction = Vector2.zero;
         protected virtual Vector2 Direction
         {
@@ -38,21 +38,25 @@ namespace Tanks
                 {
                     value.Normalize();
                     _direction = value;
-                    // Debug.Log(_direction);
-                    if (_directionDict.ContainsKey(_direction))
+                    if (_direction == Vector2.up) eDirection = Directions.Up;
+                    if (_direction == Vector2.down) eDirection = Directions.Down;
+                    if (_direction == Vector2.left) eDirection = Directions.Left;
+                    if (_direction == Vector2.right) eDirection = Directions.Right;
+                    if (_directionDict.ContainsKey(eDirection))
                     {
-                        _spriteRenderer.sprite = _directionDict[_direction];
+                        _spriteRenderer.sprite = _directionDict[eDirection];
                     }
-                    else Debug.Log("No key + " + _direction + " in dict");
+                    else Debug.Log("No key " + _direction + " in dict");
                 }
             }
         }
+        protected Directions eDirection = Directions.Up;
         #region Unity_Methods
         protected virtual void Awake()
         {
             _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
             _rigidBody = GetComponent<Rigidbody2D>();
-            _defaultDirectionDict = new() { { Vector2.up, _defaultDirectionSprites[0] }, { Vector2.down, _defaultDirectionSprites[1] }, { Vector2.left, _defaultDirectionSprites[2] }, { Vector2.right, _defaultDirectionSprites[3] } };
+            _defaultDirectionDict = new() { { Directions.Up, _defaultDirectionSprites[0] }, { Directions.Down, _defaultDirectionSprites[1] }, { Directions.Left, _defaultDirectionSprites[2] }, { Directions.Right, _defaultDirectionSprites[3] } };
             _directionDict = _defaultDirectionDict;
         }
         protected virtual void FixedUpdate()

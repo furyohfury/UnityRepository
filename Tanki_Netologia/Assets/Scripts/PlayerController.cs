@@ -17,7 +17,7 @@ namespace Tanks
         private Animation _blinkingAnimation;
         [SerializeField]
         private Sprite[] _blinkDirectionSprites = new Sprite[4];
-        private Dictionary<Vector2, Sprite> _blinkDirectionDict;
+        private Dictionary<Directions, Sprite> _blinkDirectionDict;
         [SerializeField]
         private float _blinkInterval = 0.5f;
         #region Unity_Methods
@@ -35,7 +35,7 @@ namespace Tanks
         {
             StartPosition = transform.position;
             _blinkingAnimation = GetComponent<Animation>();
-            _blinkDirectionDict = new() { { Vector2.up, _blinkDirectionSprites[0] }, { Vector2.down, _blinkDirectionSprites[1] }, { Vector2.left, _blinkDirectionSprites[2] }, { Vector2.right, _blinkDirectionSprites[3] } };
+            _blinkDirectionDict = new() { { Directions.Up, _blinkDirectionSprites[0] }, { Directions.Down, _blinkDirectionSprites[1] }, { Directions.Left, _blinkDirectionSprites[2] }, { Directions.Right, _blinkDirectionSprites[3] } };
         }
         private void Update()
         {
@@ -106,7 +106,7 @@ namespace Tanks
             float blinkTime = 0;
             Invulnerable = true;
             _directionDict = _blinkDirectionDict;
-            _spriteRenderer.sprite = _directionDict[_direction];
+            _spriteRenderer.sprite = _directionDict[eDirection];
             while (time < invulTime)
             {                                                                             
                 time += Time.deltaTime;
@@ -114,13 +114,13 @@ namespace Tanks
                 if (blinkTime > _blinkInterval)
                 {
                     _directionDict = _directionDict == _defaultDirectionDict ? _blinkDirectionDict : _defaultDirectionDict;
-                    _spriteRenderer.sprite = _directionDict[_direction];
+                    _spriteRenderer.sprite = _directionDict[eDirection];
                     blinkTime = 0;                    
                 }
                 yield return null;
             }
             _directionDict = _defaultDirectionDict;
-            _spriteRenderer.sprite = _directionDict[_direction];
+            _spriteRenderer.sprite = _directionDict[eDirection];
             Invulnerable = false;
         }
         #endregion
