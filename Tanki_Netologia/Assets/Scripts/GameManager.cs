@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Tilemaps;
+using TMPro;
 
 namespace Tanks
 {
@@ -12,17 +12,15 @@ namespace Tanks
         public static GameManager Instance;
         [SerializeField]
         private GameObject _enemyPrefab;
-        [SerializeField]
-        private PlayerController _player;
-        private List<Bullet> _bullets = new();
-        private List<EnemyController> _enemies = new();
-        private EnemySpawn[] _enemySpawns;
-        [SerializeField, Range (0, 5f)]
-        private float _invulPlayerTime = 3f;
         [SerializeField, Range(0, 10)]
         private int _numberOfEnemies = 3;
         [SerializeField, Range(0, 30f)]
         private float _enemySpawnInterval = 5f;
+        private PlayerController _player;
+        private List<Bullet> _bullets = new();
+        private List<EnemyController> _enemies = new();
+        private EnemySpawn[] _enemySpawns;
+        private bool _isSpawningCompleted = false;
 
         #region Unity_Methods
         private void Awake()
@@ -30,20 +28,12 @@ namespace Tanks
             if (Instance == null) Instance = this;
             else Destroy(this);
             _player = FindObjectOfType<PlayerController>();
-            /* Debug.Log(typeof(PlayerController) == typeof(Tank));
-            // Debug.Log(typeof(PlayerController) == typeof(EnemyController));
-            PlayerController player = FindObjectOfType<PlayerController>();
-            Tank playerTank = player;
-            Debug.Log(playerTank as PlayerController != null);
-            Debug.Log(playerTank as EnemyController != null);
-            Debug.Log(playerTank.GetType()); */
-
         }
         private void Start()
-        {            
+        {
             _enemySpawns = FindObjectsOfType<EnemySpawn>();
-            // Начало спауан противников
-            StartCoroutine(SpawnEnemies());            
+            // Начало спауна противников
+            StartCoroutine(SpawnEnemies());
         }
         private IEnumerator SpawnEnemies()
         {
@@ -51,15 +41,13 @@ namespace Tanks
             {
                 // Выбор рандомной точки спауна
                 EnemySpawn randomSpawnPoint = _enemySpawns[UnityEngine.Random.Range(0, _enemySpawns.Length)];
-                while (!randomSpawnPoint.isBusy)
-                {
-                    randomSpawnPoint = _enemySpawns[UnityEngine.Random.Range(0, _enemySpawns.Length)];
-                }
+                if (randomSpawnPoint.isBusy) randomSpawnPoint = _enemySpawns.First(sp => !sp.isBusy);
                 // Спаун противника
-                GameObject newEnemy = Instantiate(_enemyPrefab, randomSpawnPoint.transform.position, Quaternion.identity);   
+                GameObject newEnemy = Instantiate(_enemyPrefab, randomSpawnPoint.transform.position, Quaternion.identity);
                 _enemies.Add(newEnemy.GetComponent<EnemyController>());
                 yield return new WaitForSeconds(_enemySpawnInterval);
             }
+            _isSpawningCompleted = true;
         }
         private void Update()
         {
@@ -81,51 +69,53 @@ namespace Tanks
         private void BulletHit(object sender, Bullet.BulletEventArgs e)
         {
             Bullet bullet = (Bullet)sender;
-            if (e.CollidedTank != null)
+            if (e.hitObj == BulletHits.Bullet || e.hitObj == BulletHits.Wall)
+            {
+                DestroyBullet(bullet);
+            }
+            else if (e.hitObj == BulletHits.Tank)
             {
                 Tank collidedTank = e.CollidedTank;
                 if (bullet.bulletData.Owner.GetType() != collidedTank.GetType())
                 {
                     ChangeTankHP(collidedTank, bullet);
-                    _bullets.Remove(bullet);
-                    Destroy(bullet.gameObject);
                 }
+                DestroyBullet(bullet);
             }
-            else if (e.DestructedWall != null)
+            else if (e.hitObj == BulletHits.DestructibleWall)
             {
-                // Destroy(e.DestructedWall.gameObject);
-                // Destroy(e.collision.gameObject);
-                // Debug.Log(hitCellPosition);
                 e.Tilemap.SetTile(e.Tilemap.WorldToCell(e.HitPoint), null);
-                _bullets.Remove(bullet);
-                Destroy(bullet.gameObject);
+                DestroyBullet(bullet);
             }
-            else
-            {
-                _bullets.Remove(bullet);
-                Destroy(bullet.gameObject);
-            }
-            
         }
         private void ChangeTankHP(Tank tank, Bullet bullet)
         {
-            tank.ChangeHealth(-bullet.bulletData.Damage);
             // Player hit
-            if (tank as PlayerController != null &&  !((PlayerController)tank).Invulnerable)
+            if (tank as PlayerController != null && !((PlayerController)tank).Invulnerable)
             {
-                _player.PlayerGotDamaged(_invulPlayerTime);
+                tank.ChangeHealth(-bullet.bulletData.Damage);
+                _player.PlayerGotDamaged();
             }
             // Enemy hit
             else
             {
                 if (tank.Health <= 0)
-                _enemies.Remove(tank as EnemyController);
-                Destroy(tank.gameObject);
+                {
+                    _enemies.Remove(tank as EnemyController);
+                    Destroy(tank.gameObject);
+                    if (_enemies.Count <= 0 && _isSpawningCompleted) _player.OnWinning();
+                }
             }
+        }
+        private void DestroyBullet(Bullet bullet)
+        {
+            bullet.OnBulletHit -= BulletHit;
+            _bullets.Remove(bullet);
+            Destroy(bullet.gameObject);
         }
         private void BulletMovement()
         {
-            foreach(Bullet bullet in _bullets.ToList())
+            foreach (Bullet bullet in _bullets.ToList())
             {
                 bullet.transform.position += bullet.bulletData.Speed * Time.deltaTime * bullet.transform.right;
             }

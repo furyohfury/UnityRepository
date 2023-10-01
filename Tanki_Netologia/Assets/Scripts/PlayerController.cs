@@ -3,47 +3,48 @@ using System.Collections.Generic;
 using UnityEngine;
 using static UnityEngine.InputSystem.InputAction;
 using UnityEditor;
+using TMPro;
 
 namespace Tanks
 {
     public class PlayerController : Tank
     {
-        private PlayerControls _controls;
-        private bool _canShoot = true;
-        public Vector2 StartPosition {get; private set;}
-        public bool Invulnerable {get; private set;} = false;
-        public bool testblink = false;
-        [SerializeField]
-        private Animation _blinkingAnimation;
         [SerializeField]
         private Sprite[] _blinkDirectionSprites = new Sprite[4];
-        private Dictionary<Directions, Sprite> _blinkDirectionDict;
         [SerializeField]
         private float _blinkInterval = 0.5f;
+        [SerializeField]
+        private TextMeshProUGUI _godmodeText;
+        [SerializeField, Range(0, 5f)]
+        private float _invulPlayerTime = 3f;
+        [SerializeField]
+        private TextMeshProUGUI _winLoseText;
+        private PlayerControls _controls;
+        private bool _canShoot = true;
+        private Vector2 _startPosition;
+        /// <summary>
+        /// Словарь для спрайтов мигания
+        /// </summary>
+        private Dictionary<Directions, Sprite> _blinkDirectionDict;
+        public bool Invulnerable { get; private set; } = false;
+        private Coroutine _godmodeCoroutine;
         #region Unity_Methods
         protected override void Awake()
         {
             base.Awake();
             _controls = new();
             _controls.Enable();
+            // Debug.Log(_controls.PlayerMap.Exit.interactions);
         }
         private void OnEnable()
         {
             _controls.PlayerMap.Shoot.performed += OnShoot;
+            _controls.PlayerMap.Godmode.performed += OnStartGodmode;
         }
         private void Start()
         {
-            StartPosition = transform.position;
-            _blinkingAnimation = GetComponent<Animation>();
+            _startPosition = transform.position;
             _blinkDirectionDict = new() { { Directions.Up, _blinkDirectionSprites[0] }, { Directions.Down, _blinkDirectionSprites[1] }, { Directions.Left, _blinkDirectionSprites[2] }, { Directions.Right, _blinkDirectionSprites[3] } };
-        }
-        private void Update()
-        {
-            if (testblink)
-            {
-                StartCoroutine(Blinking(3));
-                testblink = false;
-            }
         }
         protected override void FixedUpdate()
         {
@@ -53,19 +54,16 @@ namespace Tanks
         private void OnDisable()
         {
             _controls.PlayerMap.Shoot.performed -= OnShoot;
+            _controls.PlayerMap.Godmode.performed -= OnStartGodmode;
             _controls.Dispose();
         }
         #endregion
-        public void SetInvulnerability(bool isInvulnerable)
-        {
-            Invulnerable = isInvulnerable;
-        }
         #region Movement
         private void Movement()
         {
             Vector2 input = _controls.PlayerMap.Movement.ReadValue<Vector2>();
             if (input.x * input.y != 0) return;
-            _rigidBody.velocity = input;
+            _rigidBody.velocity = input * MoveSpeed;
         }
         #endregion
         #region Shooting
@@ -85,43 +83,114 @@ namespace Tanks
         }
         #endregion
         #region Damaged
-        public void PlayerGotDamaged(float invulTime)
+        public void PlayerGotDamaged()
         {
             if (Health > 0)
             {
-                transform.position = StartPosition;
-                StartCoroutine(Blinking(invulTime));
+                transform.position = _startPosition;
+                StartCoroutine(Blinking());
             }
-            else 
+            else
             {
-#if UNITY_EDITOR
-                EditorApplication.isPaused = true;
-#endif
-                //todo lose
+                OnLosing();
             }
         }
-        private IEnumerator Blinking(float invulTime)
+        private IEnumerator Blinking()
         {
             float time = 0;
             float blinkTime = 0;
             Invulnerable = true;
             _directionDict = _blinkDirectionDict;
             _spriteRenderer.sprite = _directionDict[eDirection];
-            while (time < invulTime)
-            {                                                                             
+            while (time < _invulPlayerTime)
+            {
                 time += Time.deltaTime;
                 blinkTime += Time.deltaTime;
                 if (blinkTime > _blinkInterval)
                 {
                     _directionDict = _directionDict == _defaultDirectionDict ? _blinkDirectionDict : _defaultDirectionDict;
                     _spriteRenderer.sprite = _directionDict[eDirection];
-                    blinkTime = 0;                    
+                    blinkTime = 0;
                 }
                 yield return null;
             }
             _directionDict = _defaultDirectionDict;
             _spriteRenderer.sprite = _directionDict[eDirection];
             Invulnerable = false;
+        }
+        #endregion
+        #region Godmode
+        private void OnStartGodmode(CallbackContext context)
+        {
+            if (_godmodeCoroutine == null)
+            {
+                _godmodeText.text = "G for Godmode. Godmode: Enabled";
+                _godmodeCoroutine = StartCoroutine(Godmode());
+            }
+            else
+            {
+                _godmodeText.text = "G for Godmode. Godmode: Disabled";
+                OnStopGodmode();
+            }
+        }
+        private IEnumerator Godmode()
+        {
+            float blinkTime = 0;
+            Invulnerable = true;
+            _directionDict = _blinkDirectionDict;
+            _spriteRenderer.sprite = _directionDict[eDirection];
+            while (true)
+            {
+                blinkTime += Time.deltaTime;
+                if (blinkTime > _blinkInterval)
+                {
+                    _directionDict = _directionDict == _defaultDirectionDict ? _blinkDirectionDict : _defaultDirectionDict;
+                    _spriteRenderer.sprite = _directionDict[eDirection];
+                    blinkTime = 0;
+                }
+                yield return null;
+            }
+        }
+        private void OnStopGodmode()
+        {
+            StopCoroutine(_godmodeCoroutine);
+            _godmodeCoroutine = null;
+            _directionDict = _defaultDirectionDict;
+            _spriteRenderer.sprite = _directionDict[eDirection];
+            Invulnerable = false;
+            StartCoroutine(Blinking());
+        }
+        #endregion
+        #region Win_Lose
+        public void OnWinning()
+        {
+            StartCoroutine(Winning());
+        }
+        private IEnumerator Winning()
+        {
+            _controls.Disable();
+            _winLoseText.text = "You win!";
+            yield return new WaitForSeconds(3f);
+#if UNITY_EDITOR
+            EditorApplication.isPlaying = false;
+#elif !UNITY_EDITOR && UNITY_STANDALONE_WIN
+            Application.Quit();
+#endif
+        }
+        private void OnLosing()
+        {
+            StartCoroutine(Losing());
+        }
+        private IEnumerator Losing()
+        {
+            _controls.Disable();
+            _winLoseText.text = "You lost(";
+            yield return new WaitForSeconds(3f);
+#if UNITY_EDITOR
+            EditorApplication.isPlaying = false;
+#elif !UNITY_EDITOR && UNITY_STANDALONE_WIN
+            Application.Quit();
+#endif
         }
         #endregion
     }

@@ -7,4 +7,11 @@ namespace Tanks
         Left,
         Right
     }
+    public enum BulletHits
+    {
+        Bullet,
+        Tank,
+        Wall,
+        DestructibleWall
+    }
 }

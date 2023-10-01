@@ -1,13 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
 namespace Tanks
 {
-    public struct TankData
-    {
-        public int Health { get; private set; }
-    } 
     public struct BulletData
     {
         public int Damage { get; set; }

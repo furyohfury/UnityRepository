@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -9,59 +7,59 @@ namespace Tanks
     public class Bullet : MonoBehaviour
     {
         public BulletData bulletData;
-        /* private void OnTriggerEnter2D(Collider2D collision)
-        {
-            if (collision.gameObject.TryGetComponent(out Tank tank))
-            {
-                OnBulletHit?.Invoke(this, new BulletEventArgs(tank));
-            }            
-            else if (collision.gameObject.TryGetComponent(out Wall wall))
-            {
-                // Destroy(gameObject);
-                OnBulletHit?.Invoke(this, new BulletEventArgs(wall));
-            }
-            else if (collision.gameObject.TryGetComponent(out DestructibleWall dwall))
-            {
-                // Destroy(collision.gameObject);
-                // Destroy(gameObject);
-                OnBulletHit?.Invoke(this, new BulletEventArgs(dwall, collision));
-            }
-        } */
         private void OnCollisionEnter2D(Collision2D collision)
-        {            
+        {
+            if (collision.gameObject.TryGetComponent(out Bullet _))
+            {
+                OnBulletHit?.Invoke(this, new BulletEventArgs(BulletHits.Bullet));
+            }
             if (collision.gameObject.TryGetComponent(out Tank tank))
             {
-                OnBulletHit?.Invoke(this, new BulletEventArgs(tank));
+                OnBulletHit?.Invoke(this, new BulletEventArgs(BulletHits.Tank, tank));
             }
             else if (collision.gameObject.TryGetComponent(out Wall wall))
             {
-                // Destroy(gameObject);
-                OnBulletHit?.Invoke(this, new BulletEventArgs(wall));
+                OnBulletHit?.Invoke(this, new BulletEventArgs(BulletHits.Wall));
             }
             else if (collision.gameObject.TryGetComponent(out DestructibleWall dwall))
             {
-                // Destroy(collision.gameObject);
-                // Destroy(gameObject);
-                OnBulletHit?.Invoke(this, new BulletEventArgs(dwall, collision.gameObject.GetComponent<Tilemap>(), collision.contacts[0].point, (Vector2) transform.right));
+                OnBulletHit?.Invoke(this, new BulletEventArgs(BulletHits.DestructibleWall, null, collision.gameObject.GetComponent<Tilemap>(), collision.contacts[0].point, (Vector2)transform.right));
             }
         }
         public class BulletEventArgs : EventArgs
         {
+            public BulletHits hitObj;
             public Tank CollidedTank;
-            public DestructibleWall DestructedWall;
-            //public Collision2D DestructedWallCollision;
             public Tilemap Tilemap;
             public Vector2 HitPoint;
-            public BulletEventArgs(Tank tank)
+            public BulletEventArgs(BulletHits hit, Tank tank = null, Tilemap tilemap = null, Vector2 hitPoint = default, Vector2 bulletForwardVector = default)
             {
-                CollidedTank = tank;
-            }
-            public BulletEventArgs(Wall _) { }
-            public BulletEventArgs(DestructibleWall desWall, Tilemap tilemap, Vector2 hitPoint, Vector2 delta)
-            {                
-                DestructedWall = desWall;
-                Tilemap = tilemap;
-                HitPoint = hitPoint + delta * 0.1f;
+                switch (hit)
+                {
+                    case BulletHits.Bullet:
+                        {
+                            hitObj = BulletHits.Bullet;
+                        }
+                        break;
+                    case BulletHits.Tank:
+                        {
+                            hitObj = BulletHits.Tank;
+                            CollidedTank = tank;
+                        }
+                        break;
+                    case BulletHits.Wall:
+                        {
+                            hitObj = BulletHits.Wall;
+                        }
+                        break;
+                    case BulletHits.DestructibleWall:
+                        {
+                            hitObj = BulletHits.DestructibleWall;
+                            Tilemap = tilemap;
+                            HitPoint = hitPoint + bulletForwardVector * 0.1f;
+                        }
+                        break;
+                }
             }
         }
         public event EventHandler<BulletEventArgs> OnBulletHit;

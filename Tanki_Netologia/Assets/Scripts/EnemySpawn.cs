@@ -1,11 +1,8 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Tanks
 {
-    public class EnemySpawn : MonoBehaviour 
+    public class EnemySpawn : MonoBehaviour
     {
         public bool isBusy = false;
         private void OnTriggerEnter2D(Collider2D other)

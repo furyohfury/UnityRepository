@@ -111,16 +111,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c2d4c31549a5334c8f3b0e330314260, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <Health>k__BackingField: 2
-  <MoveSpeed>k__BackingField: 1
+  <Health>k__BackingField: 4
+  <MoveSpeed>k__BackingField: 1.5
   <AttackSpeed>k__BackingField: 2
   <Damage>k__BackingField: 1
+  <BulletSpeed>k__BackingField: 3
   _defaultDirectionSprites:
   - {fileID: -1698215046, guid: eee2acede98668b4da7aa181033759d2, type: 3}
   - {fileID: 581412136, guid: eee2acede98668b4da7aa181033759d2, type: 3}
   - {fileID: 766535411, guid: eee2acede98668b4da7aa181033759d2, type: 3}
   - {fileID: 1437850116, guid: eee2acede98668b4da7aa181033759d2, type: 3}
-  _bullet: {fileID: 64892564588804960, guid: e74fd5c4f414b0445ac6322835175d66, type: 3}
+  _bulletPrefab: {fileID: 2957566824965809173}
   _movingForwardTime: 3
   _checkingCollider: {fileID: 2957566824965809182}
   _inFrontGO: {fileID: 0}

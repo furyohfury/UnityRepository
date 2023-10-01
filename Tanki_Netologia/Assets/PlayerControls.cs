@@ -82,6 +82,15 @@ namespace Tanks
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Godmode"",
+                    ""type"": ""Button"",
+                    ""id"": ""a89f83c5-138e-4dc8-ad60-e5ad386107d4"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -249,6 +258,17 @@ namespace Tanks
                     ""action"": ""DownMove"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""8812bd4b-606a-4fd9-82d0-46be26fd1f58"",
+                    ""path"": ""<Keyboard>/g"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Godmode"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -263,6 +283,7 @@ namespace Tanks
             m_PlayerMap_RightMove = m_PlayerMap.FindAction("RightMove", throwIfNotFound: true);
             m_PlayerMap_UpMove = m_PlayerMap.FindAction("UpMove", throwIfNotFound: true);
             m_PlayerMap_DownMove = m_PlayerMap.FindAction("DownMove", throwIfNotFound: true);
+            m_PlayerMap_Godmode = m_PlayerMap.FindAction("Godmode", throwIfNotFound: true);
         }
 
         public void Dispose()
@@ -330,6 +351,7 @@ namespace Tanks
         private readonly InputAction m_PlayerMap_RightMove;
         private readonly InputAction m_PlayerMap_UpMove;
         private readonly InputAction m_PlayerMap_DownMove;
+        private readonly InputAction m_PlayerMap_Godmode;
         public struct PlayerMapActions
         {
             private @PlayerControls m_Wrapper;
@@ -340,6 +362,7 @@ namespace Tanks
             public InputAction @RightMove => m_Wrapper.m_PlayerMap_RightMove;
             public InputAction @UpMove => m_Wrapper.m_PlayerMap_UpMove;
             public InputAction @DownMove => m_Wrapper.m_PlayerMap_DownMove;
+            public InputAction @Godmode => m_Wrapper.m_PlayerMap_Godmode;
             public InputActionMap Get() { return m_Wrapper.m_PlayerMap; }
             public void Enable() { Get().Enable(); }
             public void Disable() { Get().Disable(); }
@@ -367,6 +390,9 @@ namespace Tanks
                 @DownMove.started += instance.OnDownMove;
                 @DownMove.performed += instance.OnDownMove;
                 @DownMove.canceled += instance.OnDownMove;
+                @Godmode.started += instance.OnGodmode;
+                @Godmode.performed += instance.OnGodmode;
+                @Godmode.canceled += instance.OnGodmode;
             }
 
             private void UnregisterCallbacks(IPlayerMapActions instance)
@@ -389,6 +415,9 @@ namespace Tanks
                 @DownMove.started -= instance.OnDownMove;
                 @DownMove.performed -= instance.OnDownMove;
                 @DownMove.canceled -= instance.OnDownMove;
+                @Godmode.started -= instance.OnGodmode;
+                @Godmode.performed -= instance.OnGodmode;
+                @Godmode.canceled -= instance.OnGodmode;
             }
 
             public void RemoveCallbacks(IPlayerMapActions instance)
@@ -414,6 +443,7 @@ namespace Tanks
             void OnRightMove(InputAction.CallbackContext context);
             void OnUpMove(InputAction.CallbackContext context);
             void OnDownMove(InputAction.CallbackContext context);
+            void OnGodmode(InputAction.CallbackContext context);
         }
     }
 }

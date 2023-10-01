@@ -1,29 +1,24 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 namespace Tanks
 {
     public class EnemyController : Tank
-    {
-        Coroutine _shootingCor;
+    {        
         [SerializeField, Range(0, 10f)]
-        private float _movingForwardTime = 3f;
-        private Vector2 _enemyDirection;
+        private float _movingForwardTime = 3f;        
         [SerializeField]
         private CapsuleCollider2D _checkingCollider;
         [SerializeField]
         private GameObject _inFrontGO;
+        private Vector2 _enemyDirection;
+        private Coroutine _shootingCor;
         private Coroutine _moveForwardCoroutine;
         #region Unity_Methods
         private void Start()
-        {
-            OnMoveForward += MoveForward;
-            OnChangeDirection += ChangeDirection;
-            // OnCheckForward += CheckMoveOrChangeDirection;
+        {            
             _shootingCor = StartCoroutine(RepeatShooting());
-            _enemyDirection = FindDirectionToPlayer();            
-            // CheckMoveOrChangeDirection();
+            _enemyDirection = FindDirectionToPlayer();   
             StartCoroutine(AICycle());
         }
         private IEnumerator RepeatShooting()
@@ -51,15 +46,10 @@ namespace Tanks
                 }
             }
         }
-        private void OnDisable()
-        {
-            OnMoveForward -= MoveForward;
-            OnChangeDirection -= ChangeDirection;
-            // OnCheckForward -= CheckMoveOrChangeDirection;
-        }
         private void OnDestroy()
         {
             StopCoroutine(_shootingCor);
+            StopCoroutine(_moveForwardCoroutine);
         }
         private void OnTriggerStay2D(Collider2D collision)
         {
@@ -78,20 +68,14 @@ namespace Tanks
         }
         private bool CheckMoveOrChangeDirection()
         {
-            Debug.Log(gameObject.name + " checks forward");
+            // Debug.Log(gameObject.name + " checks forward");
             if (_inFrontGO == null || _inFrontGO.TryGetComponent(out DestructibleWall _))
             {
                 return true;
-                // OnMoveForward?.Invoke();
-                // Debug.Log("DestructibleWall ahead");
             }
-            // else if (_inFrontGO.TryGetComponent(out Wall _) || _inFrontGO.TryGetComponent(out Water _) || _inFrontGO.TryGetComponent(out EnemyController _))
             else
             {
                 return false;
-                // Debug.Log("wall/water/enemy ahead");
-                // OnChangeDirection?.Invoke();
-                // Debug.Log(gameObject.name + " change direction");
             }
         }
         #endregion
@@ -99,18 +83,17 @@ namespace Tanks
         private void MoveForward()
         {
             _moveForwardCoroutine = StartCoroutine(MoveForwardForTime());
-            Debug.Log(gameObject.name + " moves forward");
+            // Debug.Log(gameObject.name + " moves forward");
         }
         private IEnumerator MoveForwardForTime()
         {
             _rigidBody.velocity = Direction * MoveSpeed;
             yield return new WaitForSeconds(_movingForwardTime);
-            // OnCheckForward?.Invoke();
         }
 
         private void ChangeDirection()
         {
-            Debug.Log(gameObject.name + " change direction");
+            // Debug.Log(gameObject.name + " change direction");
             int randomAngle;
             float r = UnityEngine.Random.value;
             if (r <= 0.33f) randomAngle = -90;
@@ -119,7 +102,6 @@ namespace Tanks
             _enemyDirection = Rotate(_enemyDirection, randomAngle);
             Direction = _enemyDirection;
             _checkingCollider.offset = _enemyDirection;
-            // OnCheckForward?.Invoke();
 
         }
         private Vector2 Rotate(Vector2 v, float delta)
@@ -130,6 +112,9 @@ namespace Tanks
                 v.x * Mathf.Sin(delta) + v.y * Mathf.Cos(delta)
             );
         }
+
+        #endregion
+        #region Public_Methods
         public override void ChangeHealth(int delta)
         {
             base.ChangeHealth(delta);
@@ -137,13 +122,9 @@ namespace Tanks
             {
                 StopCoroutine(_moveForwardCoroutine);
                 _enemyDirection = FindDirectionToPlayer();
-                OnMoveForward?.Invoke();
+                Direction = _enemyDirection;
             }
         }
         #endregion
-        public delegate void EnemyAction();
-        public event EnemyAction OnCheckForward;
-        public event EnemyAction OnMoveForward;
-        public event EnemyAction OnChangeDirection;
-    }    
+    }
 }

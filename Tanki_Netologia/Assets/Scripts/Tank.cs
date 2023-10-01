@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 namespace Tanks
@@ -15,14 +14,14 @@ namespace Tanks
         protected float AttackSpeed { get; private set; } = 0.5f;
         [field: SerializeField]
         public int Damage { get; private set; } = 1;
-        protected float BulletSpeed { get; private set; } = 2f;
-        protected Rigidbody2D _rigidBody;
-        protected SpriteRenderer _spriteRenderer;
+        [field: SerializeField]
+        protected float BulletSpeed { get; private set; } = 3f;
         [SerializeField]
         protected Sprite[] _defaultDirectionSprites = new Sprite[4];
-        protected Sprite _activeSprite;
         [SerializeField]
-        protected GameObject _bullet;
+        protected GameObject _bulletPrefab;
+        protected Rigidbody2D _rigidBody;
+        protected SpriteRenderer _spriteRenderer;
         protected Dictionary<Directions, Sprite> _directionDict;
         protected Dictionary<Directions, Sprite> _defaultDirectionDict;
         protected Vector2 _direction = Vector2.zero;
@@ -61,21 +60,12 @@ namespace Tanks
         }
         protected virtual void FixedUpdate()
         {
-            /* if (_rigidBody.velocity.x > 0) _activeSprite = _rightView;
-            else if (_rigidBody.velocity.x < 0) _activeSprite = _leftView;
-            else if (_rigidBody.velocity.y > 0) _activeSprite = _upView;
-            else if (_rigidBody.velocity.y < 0) _activeSprite = _downView;
-            _spriteRenderer.sprite = _activeSprite;
-            if (_rigidBody.velocity != Vector2.zero)
-            {
-                _direction = _rigidBody.velocity;
-            } */
             Direction = _rigidBody.velocity;
         }
         #endregion
         protected void Shoot()
         {
-            Bullet bulletComp = Instantiate(_bullet, (Vector2)transform.position + 0.7f * transform.localScale.x * _direction, _bullet.transform.rotation * Quaternion.Euler(new Vector3(0, 0, Vector2.SignedAngle(Vector2.up, _direction)))).GetComponent<Bullet>();
+            Bullet bulletComp = Instantiate(_bulletPrefab, (Vector2)transform.position + 0.7f * transform.localScale.x * _direction, _bulletPrefab.transform.rotation * Quaternion.Euler(new Vector3(0, 0, Vector2.SignedAngle(Vector2.up, _direction)))).GetComponent<Bullet>();
             bulletComp.bulletData = new(Damage, BulletSpeed, this);
             GameManager.Instance.AddBullet(bulletComp);
         }
