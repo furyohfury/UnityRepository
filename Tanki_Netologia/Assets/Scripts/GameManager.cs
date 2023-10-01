@@ -44,8 +44,9 @@ namespace Tanks
                 if (randomSpawnPoint.isBusy) randomSpawnPoint = _enemySpawns.First(sp => !sp.isBusy);
                 // Спаун противника
                 GameObject newEnemy = Instantiate(_enemyPrefab, randomSpawnPoint.transform.position, Quaternion.identity);
+                newEnemy.name = "Enemy" + i;
                 _enemies.Add(newEnemy.GetComponent<EnemyController>());
-                yield return new WaitForSeconds(_enemySpawnInterval);
+                if (i != _numberOfEnemies - 1) yield return new WaitForSeconds(_enemySpawnInterval);
             }
             _isSpawningCompleted = true;
         }
@@ -104,7 +105,11 @@ namespace Tanks
                 {
                     _enemies.Remove(tank as EnemyController);
                     Destroy(tank.gameObject);
-                    if (_enemies.Count <= 0 && _isSpawningCompleted) _player.OnWinning();
+                    if (_enemies.Count <= 0 && _isSpawningCompleted)
+                    {
+                        Debug.Log("Win");
+                        _player.OnWinning();
+                    }
                 }
             }
         }

@@ -19,13 +19,13 @@ namespace Tanks
         [SerializeField]
         protected Sprite[] _defaultDirectionSprites = new Sprite[4];
         [SerializeField]
-        protected GameObject _bulletPrefab;
-        protected Rigidbody2D _rigidBody;
-        protected SpriteRenderer _spriteRenderer;
-        protected Dictionary<Directions, Sprite> _directionDict;
-        protected Dictionary<Directions, Sprite> _defaultDirectionDict;
+        protected GameObject BulletPrefab;
+        protected Rigidbody2D RigidBody;
+        protected SpriteRenderer SpriteRenderer;
+        protected Dictionary<Directions, Sprite> DirectionDict;
+        protected Dictionary<Directions, Sprite> DefaultDirectionDict;
         protected Vector2 _direction = Vector2.zero;
-        protected virtual Vector2 Direction
+        protected virtual Vector2 DirectionVisual
         {
             get
             {
@@ -41,9 +41,9 @@ namespace Tanks
                     if (_direction == Vector2.down) eDirection = Directions.Down;
                     if (_direction == Vector2.left) eDirection = Directions.Left;
                     if (_direction == Vector2.right) eDirection = Directions.Right;
-                    if (_directionDict.ContainsKey(eDirection))
+                    if (DirectionDict.ContainsKey(eDirection))
                     {
-                        _spriteRenderer.sprite = _directionDict[eDirection];
+                        SpriteRenderer.sprite = DirectionDict[eDirection];
                     }
                     else Debug.Log("No key " + _direction + " in dict");
                 }
@@ -53,19 +53,20 @@ namespace Tanks
         #region Unity_Methods
         protected virtual void Awake()
         {
-            _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
-            _rigidBody = GetComponent<Rigidbody2D>();
-            _defaultDirectionDict = new() { { Directions.Up, _defaultDirectionSprites[0] }, { Directions.Down, _defaultDirectionSprites[1] }, { Directions.Left, _defaultDirectionSprites[2] }, { Directions.Right, _defaultDirectionSprites[3] } };
-            _directionDict = _defaultDirectionDict;
+            SpriteRenderer = GetComponentInChildren<SpriteRenderer>();
+            RigidBody = GetComponent<Rigidbody2D>();
+            DefaultDirectionDict = new() { { Directions.Up, _defaultDirectionSprites[0] }, { Directions.Down, _defaultDirectionSprites[1] }, { Directions.Left, _defaultDirectionSprites[2] }, { Directions.Right, _defaultDirectionSprites[3] } };
+            DirectionDict = DefaultDirectionDict;
         }
         protected virtual void FixedUpdate()
         {
-            Direction = _rigidBody.velocity;
+            if (RigidBody.velocity.x != 0 && RigidBody.velocity.y != 0) RigidBody.velocity = RigidBody.velocity.x > RigidBody.velocity.y ? new Vector2(RigidBody.velocity.x, 0) : new Vector2(0, RigidBody.velocity.y);
+            DirectionVisual = RigidBody.velocity;
         }
         #endregion
         protected void Shoot()
         {
-            Bullet bulletComp = Instantiate(_bulletPrefab, (Vector2)transform.position + 0.7f * transform.localScale.x * _direction, _bulletPrefab.transform.rotation * Quaternion.Euler(new Vector3(0, 0, Vector2.SignedAngle(Vector2.up, _direction)))).GetComponent<Bullet>();
+            Bullet bulletComp = Instantiate(BulletPrefab, (Vector2)transform.position + 0.7f * transform.localScale.x * DirectionVisual, BulletPrefab.transform.rotation * Quaternion.Euler(new Vector3(0, 0, Vector2.SignedAngle(Vector2.up, DirectionVisual)))).GetComponent<Bullet>();
             bulletComp.bulletData = new(Damage, BulletSpeed, this);
             GameManager.Instance.AddBullet(bulletComp);
         }

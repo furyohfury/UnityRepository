@@ -4,21 +4,34 @@ using UnityEngine;
 namespace Tanks
 {
     public class EnemyController : Tank
-    {        
+    {
         [SerializeField, Range(0, 10f)]
-        private float _movingForwardTime = 3f;        
+        private float _movingForwardTime = 3f;
         [SerializeField]
         private CapsuleCollider2D _checkingCollider;
         [SerializeField]
         private GameObject _inFrontGO;
-        private Vector2 _enemyDirection;
+        private Vector2 _enemyDirectionMove = Vector2.up;
+        private Vector2 EnemyDirectionMove
+        {
+            get
+            {
+                return _enemyDirectionMove;
+            }
+            set
+            {
+                _enemyDirectionMove = value;
+                _checkingCollider.offset = _enemyDirectionMove;
+                DirectionVisual = _enemyDirectionMove;
+            }
+        }
         private Coroutine _shootingCor;
         private Coroutine _moveForwardCoroutine;
         #region Unity_Methods
         private void Start()
-        {            
+        {
             _shootingCor = StartCoroutine(RepeatShooting());
-            _enemyDirection = FindDirectionToPlayer();   
+            FindDirectionToPlayer();
             StartCoroutine(AICycle());
         }
         private IEnumerator RepeatShooting()
@@ -36,35 +49,48 @@ namespace Tanks
                 if (CheckMoveOrChangeDirection())
                 {
                     MoveForward();
-                    yield return new WaitForSeconds(_movingForwardTime);
+                    yield return new WaitForSeconds(_movingForwardTime + 0.1f);
                 }
                 else
                 {
                     ChangeDirection();
                     MoveForward();
-                    yield return new WaitForSeconds(_movingForwardTime);
+                    yield return new WaitForSeconds(_movingForwardTime + 0.1f);
                 }
             }
         }
         private void OnDestroy()
         {
             StopCoroutine(_shootingCor);
-            StopCoroutine(_moveForwardCoroutine);
+            if (_moveForwardCoroutine != null) StopCoroutine(_moveForwardCoroutine);
+        }
+        private void OnTriggerEnter2D(Collider2D collision)
+        {
+            
         }
         private void OnTriggerStay2D(Collider2D collision)
         {
-            if (!collision.gameObject.TryGetComponent(out Bullet _)) _inFrontGO = collision.gameObject;
+            if (!collision.gameObject.TryGetComponent(out Bullet _) && !collision.gameObject.TryGetComponent(out EnemySpawn _))
+            {
+                _inFrontGO = collision.gameObject;
+            }
+        }
+        private void OnTriggerExit2D(Collider2D collision)
+        {
+            if (!collision.gameObject.TryGetComponent(out Bullet _) && !collision.gameObject.TryGetComponent(out EnemySpawn _))
+            {
+                _inFrontGO = null;
+            }            
         }
         #endregion
         #region CheckingAI
-        private Vector2 FindDirectionToPlayer()
+        private void FindDirectionToPlayer()
         {
             Vector2 playerPos = GameManager.Instance.GetPlayerPosition();
             Vector2 directionToPlayer = playerPos - (Vector2)transform.position;
             directionToPlayer = directionToPlayer.x > directionToPlayer.y ? new Vector2(0, directionToPlayer.y) : new Vector2(directionToPlayer.x, 0);
             directionToPlayer.Normalize();
-            Direction = directionToPlayer;
-            return directionToPlayer;
+            EnemyDirectionMove = directionToPlayer;
         }
         private bool CheckMoveOrChangeDirection()
         {
@@ -82,13 +108,14 @@ namespace Tanks
         #region ActionsAI
         private void MoveForward()
         {
-            _moveForwardCoroutine = StartCoroutine(MoveForwardForTime());
+            if (_moveForwardCoroutine == null) _moveForwardCoroutine = StartCoroutine(MoveForwardForTime());
             // Debug.Log(gameObject.name + " moves forward");
         }
         private IEnumerator MoveForwardForTime()
         {
-            _rigidBody.velocity = Direction * MoveSpeed;
+            RigidBody.velocity = EnemyDirectionMove * MoveSpeed;
             yield return new WaitForSeconds(_movingForwardTime);
+            _moveForwardCoroutine = null;
         }
 
         private void ChangeDirection()
@@ -99,10 +126,7 @@ namespace Tanks
             if (r <= 0.33f) randomAngle = -90;
             else if (r >= 0.66f) randomAngle = 90;
             else randomAngle = 180;
-            _enemyDirection = Rotate(_enemyDirection, randomAngle);
-            Direction = _enemyDirection;
-            _checkingCollider.offset = _enemyDirection;
-
+            EnemyDirectionMove = Rotate(EnemyDirectionMove, randomAngle);
         }
         private Vector2 Rotate(Vector2 v, float delta)
         {
@@ -118,11 +142,11 @@ namespace Tanks
         public override void ChangeHealth(int delta)
         {
             base.ChangeHealth(delta);
+            // ѕри получении урона стопаетс€ и находит игрока
             if (Health > 0)
             {
                 StopCoroutine(_moveForwardCoroutine);
-                _enemyDirection = FindDirectionToPlayer();
-                Direction = _enemyDirection;
+                FindDirectionToPlayer();
             }
         }
         #endregion

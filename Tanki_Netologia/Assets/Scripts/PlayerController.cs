@@ -10,15 +10,15 @@ namespace Tanks
     public class PlayerController : Tank
     {
         [SerializeField]
-        private Sprite[] _blinkDirectionSprites = new Sprite[4];
+        private Sprite[] _blinkDirectionSprites = new Sprite[4];        
         [SerializeField]
-        private float _blinkInterval = 0.5f;
-        [SerializeField]
-        private TextMeshProUGUI _godmodeText;
-        [SerializeField, Range(0, 5f)]
-        private float _invulPlayerTime = 3f;
+        private TextMeshProUGUI _godmodeText;        
         [SerializeField]
         private TextMeshProUGUI _winLoseText;
+        [SerializeField, Range(0, 10f)]
+        private float _invulPlayerTime = 3f;
+        [SerializeField]
+        private float _blinkInterval = 0.5f;
         private PlayerControls _controls;
         private bool _canShoot = true;
         private Vector2 _startPosition;
@@ -63,7 +63,7 @@ namespace Tanks
         {
             Vector2 input = _controls.PlayerMap.Movement.ReadValue<Vector2>();
             if (input.x * input.y != 0) return;
-            _rigidBody.velocity = input * MoveSpeed;
+            RigidBody.velocity = input * MoveSpeed;
         }
         #endregion
         #region Shooting
@@ -100,22 +100,22 @@ namespace Tanks
             float time = 0;
             float blinkTime = 0;
             Invulnerable = true;
-            _directionDict = _blinkDirectionDict;
-            _spriteRenderer.sprite = _directionDict[eDirection];
+            DirectionDict = _blinkDirectionDict;
+            SpriteRenderer.sprite = DirectionDict[eDirection];
             while (time < _invulPlayerTime)
             {
                 time += Time.deltaTime;
                 blinkTime += Time.deltaTime;
                 if (blinkTime > _blinkInterval)
                 {
-                    _directionDict = _directionDict == _defaultDirectionDict ? _blinkDirectionDict : _defaultDirectionDict;
-                    _spriteRenderer.sprite = _directionDict[eDirection];
+                    DirectionDict = DirectionDict == DefaultDirectionDict ? _blinkDirectionDict : DefaultDirectionDict;
+                    SpriteRenderer.sprite = DirectionDict[eDirection];
                     blinkTime = 0;
                 }
                 yield return null;
             }
-            _directionDict = _defaultDirectionDict;
-            _spriteRenderer.sprite = _directionDict[eDirection];
+            DirectionDict = DefaultDirectionDict;
+            SpriteRenderer.sprite = DirectionDict[eDirection];
             Invulnerable = false;
         }
         #endregion
@@ -137,15 +137,15 @@ namespace Tanks
         {
             float blinkTime = 0;
             Invulnerable = true;
-            _directionDict = _blinkDirectionDict;
-            _spriteRenderer.sprite = _directionDict[eDirection];
+            DirectionDict = _blinkDirectionDict;
+            SpriteRenderer.sprite = DirectionDict[eDirection];
             while (true)
             {
                 blinkTime += Time.deltaTime;
                 if (blinkTime > _blinkInterval)
                 {
-                    _directionDict = _directionDict == _defaultDirectionDict ? _blinkDirectionDict : _defaultDirectionDict;
-                    _spriteRenderer.sprite = _directionDict[eDirection];
+                    DirectionDict = DirectionDict == DefaultDirectionDict ? _blinkDirectionDict : DefaultDirectionDict;
+                    SpriteRenderer.sprite = DirectionDict[eDirection];
                     blinkTime = 0;
                 }
                 yield return null;
@@ -155,8 +155,8 @@ namespace Tanks
         {
             StopCoroutine(_godmodeCoroutine);
             _godmodeCoroutine = null;
-            _directionDict = _defaultDirectionDict;
-            _spriteRenderer.sprite = _directionDict[eDirection];
+            DirectionDict = DefaultDirectionDict;
+            SpriteRenderer.sprite = DirectionDict[eDirection];
             Invulnerable = false;
             StartCoroutine(Blinking());
         }
