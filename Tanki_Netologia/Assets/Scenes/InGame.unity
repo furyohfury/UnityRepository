@@ -275,11 +275,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4721321125916966213, guid: 0fc6eef6b7c277b4fa1f1eb8e560aab8, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -4.509139
+      value: -4.5
       objectReference: {fileID: 0}
     - target: {fileID: 4721321125916966213, guid: 0fc6eef6b7c277b4fa1f1eb8e560aab8, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 7.48
+      value: 7.5
       objectReference: {fileID: 0}
     - target: {fileID: 4721321125916966213, guid: 0fc6eef6b7c277b4fa1f1eb8e560aab8, type: 3}
       propertyPath: m_LocalPosition.z
@@ -438,7 +438,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4721321125916966213, guid: 0fc6eef6b7c277b4fa1f1eb8e560aab8, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -4.49
+      value: -4.5
       objectReference: {fileID: 0}
     - target: {fileID: 4721321125916966213, guid: 0fc6eef6b7c277b4fa1f1eb8e560aab8, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2725,11 +2725,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4721321125916966213, guid: 0fc6eef6b7c277b4fa1f1eb8e560aab8, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 1.53
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 4721321125916966213, guid: 0fc6eef6b7c277b4fa1f1eb8e560aab8, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 7.48
+      value: 7.5
       objectReference: {fileID: 0}
     - target: {fileID: 4721321125916966213, guid: 0fc6eef6b7c277b4fa1f1eb8e560aab8, type: 3}
       propertyPath: m_LocalPosition.z
@@ -3151,11 +3151,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4721321125916966213, guid: 0fc6eef6b7c277b4fa1f1eb8e560aab8, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 1.53
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 4721321125916966213, guid: 0fc6eef6b7c277b4fa1f1eb8e560aab8, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -4.49
+      value: -4.5
       objectReference: {fileID: 0}
     - target: {fileID: 4721321125916966213, guid: 0fc6eef6b7c277b4fa1f1eb8e560aab8, type: 3}
       propertyPath: m_LocalPosition.z
@@ -3257,7 +3257,7 @@ MonoBehaviour:
   _blinkInterval: 0.5
   _godmodeText: {fileID: 169547921}
   _invulPlayerTime: 3
-  _winLoseText: {fileID: 0}
+  _winLoseText: {fileID: 2143065440}
 --- !u!50 &2044807230
 Rigidbody2D:
   serializedVersion: 4

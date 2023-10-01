@@ -97,8 +97,9 @@ namespace Tanks
                 _player.PlayerGotDamaged();
             }
             // Enemy hit
-            else
+            else if (tank as EnemyController != null)
             {
+                tank.ChangeHealth(-bullet.bulletData.Damage);
                 if (tank.Health <= 0)
                 {
                     _enemies.Remove(tank as EnemyController);

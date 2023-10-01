@@ -15,7 +15,7 @@ namespace Tanks
             }
             if (collision.gameObject.TryGetComponent(out Tank tank))
             {
-                OnBulletHit?.Invoke(this, new BulletEventArgs(BulletHits.Tank, tank));
+                OnBulletHit?.Invoke(this, new BulletEventArgs(BulletHits.Tank, tank)); //todo не дамажу энеми
             }
             else if (collision.gameObject.TryGetComponent(out Wall wall))
             {

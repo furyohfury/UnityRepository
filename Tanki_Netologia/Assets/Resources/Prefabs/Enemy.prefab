@@ -121,7 +121,7 @@ MonoBehaviour:
   - {fileID: 581412136, guid: eee2acede98668b4da7aa181033759d2, type: 3}
   - {fileID: 766535411, guid: eee2acede98668b4da7aa181033759d2, type: 3}
   - {fileID: 1437850116, guid: eee2acede98668b4da7aa181033759d2, type: 3}
-  _bulletPrefab: {fileID: 2957566824965809173}
+  _bulletPrefab: {fileID: 64892564588804960, guid: e74fd5c4f414b0445ac6322835175d66, type: 3}
   _movingForwardTime: 3
   _checkingCollider: {fileID: 2957566824965809182}
   _inFrontGO: {fileID: 0}
