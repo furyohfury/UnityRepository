@@ -64,6 +64,7 @@ namespace Tanks
         {
             StopCoroutine(_shootingCor);
             if (_moveForwardCoroutine != null) StopCoroutine(_moveForwardCoroutine);
+            if (_aiCycleCoroutine != null) StopCoroutine(_aiCycleCoroutine);
         }
         private void OnTriggerEnter2D(Collider2D collision)
         {
@@ -114,11 +115,10 @@ namespace Tanks
         }
         private IEnumerator MoveForwardForTime()
         {
-            Vector2 startPos = transform.position;
             RigidBody.velocity = EnemyDirectionMove * MoveSpeed;
             yield return new WaitForSeconds(_movingForwardTime);
             _moveForwardCoroutine = null;
-            if (startPos == transform.position) ChangeDirection();
+            ChangeDirection();
         }
 
         private void ChangeDirection()
