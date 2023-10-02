@@ -27,12 +27,13 @@ namespace Tanks
         }
         private Coroutine _shootingCor;
         private Coroutine _moveForwardCoroutine;
+        private Coroutine _aiCycleCoroutine;
         #region Unity_Methods
         private void Start()
         {
             _shootingCor = StartCoroutine(RepeatShooting());
             FindDirectionToPlayer();
-            StartCoroutine(AICycle());
+            _aiCycleCoroutine = StartCoroutine(AICycle());
         }
         private IEnumerator RepeatShooting()
         {
@@ -113,9 +114,11 @@ namespace Tanks
         }
         private IEnumerator MoveForwardForTime()
         {
+            Vector2 startPos = transform.position;
             RigidBody.velocity = EnemyDirectionMove * MoveSpeed;
             yield return new WaitForSeconds(_movingForwardTime);
             _moveForwardCoroutine = null;
+            if (startPos == transform.position) ChangeDirection();
         }
 
         private void ChangeDirection()
@@ -142,11 +145,14 @@ namespace Tanks
         public override void ChangeHealth(int delta)
         {
             base.ChangeHealth(delta);
-            // При получении урона стопается и находит игрока
+            // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
             if (Health > 0)
             {
                 StopCoroutine(_moveForwardCoroutine);
+                _moveForwardCoroutine = null;
+                StopCoroutine(_aiCycleCoroutine);
                 FindDirectionToPlayer();
+                _aiCycleCoroutine = StartCoroutine(AICycle());
             }
         }
         #endregion
