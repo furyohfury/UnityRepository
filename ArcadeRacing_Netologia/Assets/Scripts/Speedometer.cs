@@ -10,7 +10,7 @@ namespace Cars
         [SerializeField]
         private Transform _player;
         [SerializeField]
-        private float _maxSpeed = 300f;
+        private float _maxSpeed = 100f;
         [SerializeField]
         private Color _minColor = Color.yellow;
         [SerializeField]

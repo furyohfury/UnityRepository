@@ -13,6 +13,7 @@ namespace Cars
     {
         #region Fields
         public static GameManager Instance;
+        private Coroutine _timerCoroutine;
 
 
         [SerializeField]
@@ -39,7 +40,8 @@ namespace Cars
 
         private float _time;
         private float _finishTime;
-        private string[] _leaders;
+        // private string[] _leaders;
+        private (string Leader, string Name, float Time)[] _leaders = new(string Leader, string Name, float Time)[10];
         #endregion
         #region Unity_Methods
         private void Awake()
@@ -58,6 +60,7 @@ namespace Cars
         private void Start()
         {
             StartCoroutine(Countdown());
+            SetLeaderboardOnStart();
             // todo unlock Cursor.visible = false;
         }
         private IEnumerator Countdown()
@@ -71,7 +74,7 @@ namespace Cars
             _countdown.text = "GO!";
             // Активация управления игрока, таймера и спидометра
             _player.ActivatePlayerControls(true);            
-            StartCoroutine(Timer());
+            _timerCoroutine = StartCoroutine(Timer());
             _speedometer.SetActive(true);
             yield return new WaitForSeconds(1f);
             _countdown.gameObject.SetActive(false);
@@ -89,11 +92,12 @@ namespace Cars
         #endregion
         private void Finishing()
         {
-            StopCoroutine(Timer());
+            StopCoroutine(_timerCoroutine);
             _finishTime = Time.time - _time;
             _playerCamera.parent = null;
             _player.ActivatePlayerControls(false);
             _leaderboardCanvas.SetActive(true);
+            ShowLeaderboardOnFinish();
             Cursor.visible = true;
         }
         private void SetLeaderboardOnStart()
@@ -103,35 +107,60 @@ namespace Cars
             {
                 for (int i = 0; i < 10; i++)
                 {
-                    PlayerPrefs.SetString("Leader" + i, "_");
-                    _leaders[i] = " ";
+                    PlayerPrefs.SetString("Leader" + i, "None_0");
+                    _leaders[i] = ("Leader" + i, "None", 0f);
                 }
             }
             else
             {
                 for (int i = 0; i < 10; i++)
                 {
-                    _leaders[i] = PlayerPrefs.GetString("Leader" + i);
+                    string[] nameAndTime = PlayerPrefs.GetString("Leader" + i).Split("_");
+                    _leaders[i] = ("Leader" + i, nameAndTime[0], float.Parse(nameAndTime[1]));
                 }
             }
         }
         private void ShowLeaderboardOnFinish()
         {
-            string[] leadersShown = _leaders.OrderBy(p => p, new LeadersTimeComparer()).ToArray();
+            // (string, string, float)[] leadersShown = _leaders.OrderBy(p => p.Item3).ToArray();
+            _leaders = _leaders.OrderBy(p => p.Time).ToArray();
             StringBuilder sb = new();
             for (int i = 0; i < 10; i++)
             {
-                sb.Append(leadersShown[i]);
+                if (_leaders[i].Time < 0.1f) continue;
+                TimeSpan ts = TimeSpan.FromSeconds(_leaders[i].Time);
+                sb.Append(_leaders[i].Name + "\t" + ts.ToString(@"mm\:ss\:f") + "\n");
             }
             _leaderboardList.text = sb.ToString();
         }
-        public void OnInputNameValueChange_Editor(string s)
+        public void OnInputNameValueChange_Editor(string _)
         {
             if (_playerNameInputField.text.Contains("_")) _playerNameInputField.text = _playerNameInputField.text.Replace("_", "");
         }
         public void OnEnterNameButton_Editor()
         {
-
+            // Check first empty position
+            (string, string, float) r = _leaders.FirstOrDefault(p => p.Name == "None" && p.Time == 0f);
+            if (r != default)
+            {
+                int ind = Array.IndexOf(_leaders, r);
+                _leaders[ind].Name = _playerNameInputField.text;
+                _leaders[ind].Time = _finishTime;
+                ShowLeaderboardOnFinish();
+                PlayerPrefs.SetString(_leaders[ind].Leader, _leaders[ind].Name + "_" + _leaders[ind].Time);
+                return;
+            }
+            // If no empty positions but there are slower ones
+            r = _leaders.LastOrDefault(p => p.Time > _finishTime && Array.IndexOf(_leaders, p) != 9);
+            if (r != default)
+            {
+                int ind = Array.IndexOf(_leaders, r);
+                _leaders[ind].Name = _playerNameInputField.text;
+                _leaders[ind].Time = _finishTime;
+                ShowLeaderboardOnFinish();
+                PlayerPrefs.SetString(_leaders[ind].Leader, _leaders[ind].Name + "_" + _leaders[ind].Time);
+                return;
+            }
         }
     }
     public class LeadersTimeComparer : IComparer<string>
