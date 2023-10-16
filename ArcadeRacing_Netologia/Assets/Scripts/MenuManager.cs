@@ -11,7 +11,7 @@ namespace Cars
         {
             SceneManager.LoadScene(1);
         }
-        public void OnExitGameButton_Editor()
+        public void OnQuitGameButton_Editor()
         {
 #if UNITY_EDITOR
         EditorApplication.isPlaying = false;        

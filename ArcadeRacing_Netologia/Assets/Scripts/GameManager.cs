@@ -30,19 +30,21 @@ namespace Cars
         [SerializeField]
         private GameObject _speedometer;
 
-
+        // FinishUI
         [SerializeField]
         private GameObject _leaderboardCanvas;
         [SerializeField]
         private TextMeshProUGUI _leaderboardList;
         [SerializeField]
         private TMP_InputField _playerNameInputField;
+        [SerializeField]
+        private Button _enterNameButton;
 
 
         private float _time;
         private float _finishTime;
         // private string[] _leaders;
-        private (string Leader, string Name, float Time)[] _leaders = new(string Leader, string Name, float Time)[10];
+        private (string Leader, string Name, float Time)[] _leaders = new (string Leader, string Name, float Time)[10];
         #endregion
         #region Unity_Methods
         private void Awake()
@@ -73,8 +75,8 @@ namespace Cars
             _countdown.text = "1";
             yield return new WaitForSeconds(1f);
             _countdown.text = "GO!";
-            // ��������� ���������� ������, ������� � ����������
-            _player.ActivatePlayerControls(true);            
+            // Activate controls, speedometer and timer
+            _player.ActivatePlayerControls(true);
             _timerCoroutine = StartCoroutine(Timer());
             _speedometer.SetActive(true);
             yield return new WaitForSeconds(1f);
@@ -88,7 +90,7 @@ namespace Cars
                 TimeSpan ts = TimeSpan.FromSeconds(Time.time - _time);
                 _timer.text = "Time:\n" + ts.ToString(@"mm\:ss\:f");//ts.Minutes + ":" + ts.Seconds + ":" + ts.Milliseconds;
                 yield return null;
-            }            
+            }
         }
         #endregion
         private void Finishing()
@@ -146,19 +148,23 @@ namespace Cars
             {
                 int ind = Array.IndexOf(_leaders, r);
                 _leaders[ind].Name = _playerNameInputField.text;
-                _leaders[ind].Time = _finishTime;                
+                _leaders[ind].Time = _finishTime;
+
+                PlayerPrefs.DeleteKey(_leaders[ind].Leader);
                 PlayerPrefs.SetString(_leaders[ind].Leader, _leaders[ind].Name + "_" + _leaders[ind].Time);
+                ShowLeaderboardOnFinish();
                 StartCoroutine(EndGame());
                 return;
             }
             // If no empty positions but there are slower ones
             r = _leaders.LastOrDefault(p => p.Time > _finishTime);
-            if (r != default) 
+            if (r != default)
             {
                 _leaders[9].Name = _playerNameInputField.text;
                 _leaders[9].Time = _finishTime;
-                ShowLeaderboardOnFinish();
+                PlayerPrefs.DeleteKey(_leaders[9].Leader);
                 PlayerPrefs.SetString(_leaders[9].Leader, _leaders[9].Name + "_" + _leaders[9].Time);
+                ShowLeaderboardOnFinish();
                 StartCoroutine(EndGame());
                 return;
             }
@@ -170,11 +176,27 @@ namespace Cars
         private IEnumerator EndGame()
         {
             //todo button uninteractable
+            _enterNameButton.interactable = false;
+            _playerNameInputField.interactable = false;
             yield return new WaitForSeconds(3f);
             SceneManager.LoadScene(0);
         }
+        [ContextMenu("Clear PlayerPrefs")]
+        public void ClearPrefs()
+        {
+            PlayerPrefs.DeleteAll();
+            Debug.Log("PlayerPrefs cleared");
+        }
+        [ContextMenu("Show PlayerPrefs")]
+        public void ShowPlayerPrefs()
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                if (PlayerPrefs.HasKey("Leader" + i)) Debug.Log(PlayerPrefs.GetString("Leader" + i));
+            }
+        }
     }
-    public class LeadersTimeComparer : IComparer<string>
+    /* public class LeadersTimeComparer : IComparer<string>
     {
         public int Compare(string x, string y)
         {
@@ -186,5 +208,5 @@ namespace Cars
             else if (xTime > yTime) return 1;
             else return 0;
         }
-    }
+    } */
 }
