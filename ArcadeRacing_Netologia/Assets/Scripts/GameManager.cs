@@ -6,6 +6,7 @@ using System;
 using UnityEngine.UI;
 using System.Linq;
 using System.Text;
+using UnityEngine.SceneManagement;
 
 namespace Cars
 {
@@ -72,7 +73,7 @@ namespace Cars
             _countdown.text = "1";
             yield return new WaitForSeconds(1f);
             _countdown.text = "GO!";
-            // Активация управления игрока, таймера и спидометра
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             _player.ActivatePlayerControls(true);            
             _timerCoroutine = StartCoroutine(Timer());
             _speedometer.SetActive(true);
@@ -103,7 +104,7 @@ namespace Cars
         private void SetLeaderboardOnStart()
         {
             // Setup on first launch
-            if (!PlayerPrefs.HasKey("Leader1"))
+            if (!PlayerPrefs.HasKey("Leader0"))
             {
                 for (int i = 0; i < 10; i++)
                 {
@@ -123,7 +124,7 @@ namespace Cars
         private void ShowLeaderboardOnFinish()
         {
             // (string, string, float)[] leadersShown = _leaders.OrderBy(p => p.Item3).ToArray();
-            _leaders = _leaders.OrderBy(p => p.Time).ToArray();
+            SortLeaders();
             StringBuilder sb = new();
             for (int i = 0; i < 10; i++)
             {
@@ -145,22 +146,32 @@ namespace Cars
             {
                 int ind = Array.IndexOf(_leaders, r);
                 _leaders[ind].Name = _playerNameInputField.text;
-                _leaders[ind].Time = _finishTime;
-                ShowLeaderboardOnFinish();
+                _leaders[ind].Time = _finishTime;                
                 PlayerPrefs.SetString(_leaders[ind].Leader, _leaders[ind].Name + "_" + _leaders[ind].Time);
+                StartCoroutine(EndGame());
                 return;
             }
             // If no empty positions but there are slower ones
-            r = _leaders.LastOrDefault(p => p.Time > _finishTime && Array.IndexOf(_leaders, p) != 9);
-            if (r != default)
+            r = _leaders.LastOrDefault(p => p.Time > _finishTime);
+            if (r != default) 
             {
-                int ind = Array.IndexOf(_leaders, r);
-                _leaders[ind].Name = _playerNameInputField.text;
-                _leaders[ind].Time = _finishTime;
+                _leaders[9].Name = _playerNameInputField.text;
+                _leaders[9].Time = _finishTime;
                 ShowLeaderboardOnFinish();
-                PlayerPrefs.SetString(_leaders[ind].Leader, _leaders[ind].Name + "_" + _leaders[ind].Time);
+                PlayerPrefs.SetString(_leaders[9].Leader, _leaders[9].Name + "_" + _leaders[9].Time);
+                StartCoroutine(EndGame());
                 return;
             }
+        }
+        private void SortLeaders()
+        {
+            _leaders = _leaders.OrderBy(p => p.Time).ToArray();
+        }
+        private IEnumerator EndGame()
+        {
+            //todo button uninteractable
+            yield return new WaitForSeconds(3f);
+            SceneManager.LoadScene(0);
         }
     }
     public class LeadersTimeComparer : IComparer<string>
