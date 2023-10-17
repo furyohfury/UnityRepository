@@ -40,6 +40,9 @@ namespace Cars
         [SerializeField]
         private Button _enterNameButton;
 
+        [SerializeField]
+        private AudioClip _countdownSound;
+
 
         private float _time;
         private float _finishTime;
@@ -61,10 +64,12 @@ namespace Cars
             _finishLine.OnFinish -= Finishing;
         }
         private void Start()
-        {
-            StartCoroutine(Countdown());
+        {            
             SetLeaderboardOnStart();
-            // todo unlock Cursor.visible = false;
+            StartCoroutine(Countdown());
+            AudioSource ASource = GetComponent<AudioSource>();
+            ASource.PlayOneShot(_countdownSound);
+            Cursor.visible = false;
         }
         private IEnumerator Countdown()
         {
