@@ -7,7 +7,12 @@ namespace RPG.Units.Player
     {
         [SerializeField]
         private Transform _cameraPivot;
-        
+        /// <summary>
+        /// Извлечено ли оружие
+        /// </summary>
+        private bool _isArms; //todo 
+        [SerializeField]
+        private WeaponType _weaponType = WeaponType.SwordAndShield;
 
         protected override void Start()
         {

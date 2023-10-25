@@ -15,7 +15,7 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "SwordAttack",
+                    "name": "MainAction",
                     "type": "Button",
                     "id": "3d9fcea8-58ca-4ac4-bd77-73f9cbe41b28",
                     "expectedControlType": "Button",
@@ -24,7 +24,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "ShieldAtatck",
+                    "name": "AdditionalAction",
                     "type": "Button",
                     "id": "db6fd9f3-cbbe-4fd6-82ce-89a6c4cbf96f",
                     "expectedControlType": "Button",
@@ -36,6 +36,24 @@
                     "name": "LockTarget",
                     "type": "Button",
                     "id": "af3af804-2915-4e98-9d24-48d1c1d689a0",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "MeleeSet",
+                    "type": "Button",
+                    "id": "52bcb3f1-b956-4184-bcda-8b758a0d51af",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "RangeSet",
+                    "type": "Button",
+                    "id": "2ac3c0ca-1a95-400f-9fd6-d18293708e44",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -116,7 +134,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "SwordAttack",
+                    "action": "MainAction",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -127,7 +145,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "ShieldAtatck",
+                    "action": "AdditionalAction",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -139,6 +157,28 @@
                     "processors": "",
                     "groups": "",
                     "action": "LockTarget",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4edadec5-c404-475a-8a41-89d33b3becf0",
+                    "path": "<Keyboard>/1",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MeleeSet",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "0dfaa2e1-05c4-41a9-9367-22a167c59092",
+                    "path": "<Keyboard>/2",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RangeSet",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

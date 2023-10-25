@@ -60,16 +60,16 @@ namespace RPG.Units
 #endif
             if (unbind)
             {
-                _inputs.OnAttackEvent -= OnSwordAttack;
-                _inputs.OnShieldEvent -= OnShieldAttack;
-                _inputs.OnTargetEvent -= OnTargetUpdate;
+                _inputs.MainEventHandler -= OnMainAction;
+                _inputs.AdditionalEventHandler -= OnAdditionalAction;
+                _inputs.TargetEventHandler -= OnTargetUpdate;
                 return;
             }
             else
             {
-                _inputs.OnAttackEvent += OnSwordAttack;
-                _inputs.OnShieldEvent += OnShieldAttack;
-                _inputs.OnTargetEvent += OnTargetUpdate;
+                _inputs.MainEventHandler += OnMainAction;
+                _inputs.AdditionalEventHandler += OnAdditionalAction;
+                _inputs.TargetEventHandler += OnTargetUpdate;
             }            
         }
         protected virtual void OnMove()
@@ -92,13 +92,13 @@ namespace RPG.Units
         }
 
         protected abstract void OnRotate();
-        private void OnSwordAttack()
+        private void OnMainAction()
         {
             if (_inAnimation) return;
             _animator.SetTrigger("SwordAttack");
             _inAnimation = true;
         }
-        private void OnShieldAttack()
+        private void OnAdditionalAction()
         {
             if (_inAnimation || Stats._currentCooldown > 0f) return;
             _animator.SetTrigger("ShieldAttack");

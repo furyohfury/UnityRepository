@@ -39,7 +39,7 @@ namespace RPG.Units.Player
                     ""initialStateCheck"": true
                 },
                 {
-                    ""name"": ""SwordAttack"",
+                    ""name"": ""MainAction"",
                     ""type"": ""Button"",
                     ""id"": ""3d9fcea8-58ca-4ac4-bd77-73f9cbe41b28"",
                     ""expectedControlType"": ""Button"",
@@ -48,7 +48,7 @@ namespace RPG.Units.Player
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""ShieldAtatck"",
+                    ""name"": ""AdditionalAction"",
                     ""type"": ""Button"",
                     ""id"": ""db6fd9f3-cbbe-4fd6-82ce-89a6c4cbf96f"",
                     ""expectedControlType"": ""Button"",
@@ -60,6 +60,24 @@ namespace RPG.Units.Player
                     ""name"": ""LockTarget"",
                     ""type"": ""Button"",
                     ""id"": ""af3af804-2915-4e98-9d24-48d1c1d689a0"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""MeleeSet"",
+                    ""type"": ""Button"",
+                    ""id"": ""52bcb3f1-b956-4184-bcda-8b758a0d51af"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""RangeSet"",
+                    ""type"": ""Button"",
+                    ""id"": ""2ac3c0ca-1a95-400f-9fd6-d18293708e44"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
@@ -140,7 +158,7 @@ namespace RPG.Units.Player
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""SwordAttack"",
+                    ""action"": ""MainAction"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -151,7 +169,7 @@ namespace RPG.Units.Player
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""ShieldAtatck"",
+                    ""action"": ""AdditionalAction"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -163,6 +181,28 @@ namespace RPG.Units.Player
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""LockTarget"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""4edadec5-c404-475a-8a41-89d33b3becf0"",
+                    ""path"": ""<Keyboard>/1"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""MeleeSet"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""0dfaa2e1-05c4-41a9-9367-22a167c59092"",
+                    ""path"": ""<Keyboard>/2"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""RangeSet"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -202,9 +242,11 @@ namespace RPG.Units.Player
             // Unit
             m_Unit = asset.FindActionMap("Unit", throwIfNotFound: true);
             m_Unit_Move = m_Unit.FindAction("Move", throwIfNotFound: true);
-            m_Unit_SwordAttack = m_Unit.FindAction("SwordAttack", throwIfNotFound: true);
-            m_Unit_ShieldAtatck = m_Unit.FindAction("ShieldAtatck", throwIfNotFound: true);
+            m_Unit_MainAction = m_Unit.FindAction("MainAction", throwIfNotFound: true);
+            m_Unit_AdditionalAction = m_Unit.FindAction("AdditionalAction", throwIfNotFound: true);
             m_Unit_LockTarget = m_Unit.FindAction("LockTarget", throwIfNotFound: true);
+            m_Unit_MeleeSet = m_Unit.FindAction("MeleeSet", throwIfNotFound: true);
+            m_Unit_RangeSet = m_Unit.FindAction("RangeSet", throwIfNotFound: true);
             // Camera
             m_Camera = asset.FindActionMap("Camera", throwIfNotFound: true);
             m_Camera_Delta = m_Camera.FindAction("Delta", throwIfNotFound: true);
@@ -270,17 +312,21 @@ namespace RPG.Units.Player
         private readonly InputActionMap m_Unit;
         private List<IUnitActions> m_UnitActionsCallbackInterfaces = new List<IUnitActions>();
         private readonly InputAction m_Unit_Move;
-        private readonly InputAction m_Unit_SwordAttack;
-        private readonly InputAction m_Unit_ShieldAtatck;
+        private readonly InputAction m_Unit_MainAction;
+        private readonly InputAction m_Unit_AdditionalAction;
         private readonly InputAction m_Unit_LockTarget;
+        private readonly InputAction m_Unit_MeleeSet;
+        private readonly InputAction m_Unit_RangeSet;
         public struct UnitActions
         {
             private @PlayerControls m_Wrapper;
             public UnitActions(@PlayerControls wrapper) { m_Wrapper = wrapper; }
             public InputAction @Move => m_Wrapper.m_Unit_Move;
-            public InputAction @SwordAttack => m_Wrapper.m_Unit_SwordAttack;
-            public InputAction @ShieldAtatck => m_Wrapper.m_Unit_ShieldAtatck;
+            public InputAction @MainAction => m_Wrapper.m_Unit_MainAction;
+            public InputAction @AdditionalAction => m_Wrapper.m_Unit_AdditionalAction;
             public InputAction @LockTarget => m_Wrapper.m_Unit_LockTarget;
+            public InputAction @MeleeSet => m_Wrapper.m_Unit_MeleeSet;
+            public InputAction @RangeSet => m_Wrapper.m_Unit_RangeSet;
             public InputActionMap Get() { return m_Wrapper.m_Unit; }
             public void Enable() { Get().Enable(); }
             public void Disable() { Get().Disable(); }
@@ -293,15 +339,21 @@ namespace RPG.Units.Player
                 @Move.started += instance.OnMove;
                 @Move.performed += instance.OnMove;
                 @Move.canceled += instance.OnMove;
-                @SwordAttack.started += instance.OnSwordAttack;
-                @SwordAttack.performed += instance.OnSwordAttack;
-                @SwordAttack.canceled += instance.OnSwordAttack;
-                @ShieldAtatck.started += instance.OnShieldAtatck;
-                @ShieldAtatck.performed += instance.OnShieldAtatck;
-                @ShieldAtatck.canceled += instance.OnShieldAtatck;
+                @MainAction.started += instance.OnMainAction;
+                @MainAction.performed += instance.OnMainAction;
+                @MainAction.canceled += instance.OnMainAction;
+                @AdditionalAction.started += instance.OnAdditionalAction;
+                @AdditionalAction.performed += instance.OnAdditionalAction;
+                @AdditionalAction.canceled += instance.OnAdditionalAction;
                 @LockTarget.started += instance.OnLockTarget;
                 @LockTarget.performed += instance.OnLockTarget;
                 @LockTarget.canceled += instance.OnLockTarget;
+                @MeleeSet.started += instance.OnMeleeSet;
+                @MeleeSet.performed += instance.OnMeleeSet;
+                @MeleeSet.canceled += instance.OnMeleeSet;
+                @RangeSet.started += instance.OnRangeSet;
+                @RangeSet.performed += instance.OnRangeSet;
+                @RangeSet.canceled += instance.OnRangeSet;
             }
 
             private void UnregisterCallbacks(IUnitActions instance)
@@ -309,15 +361,21 @@ namespace RPG.Units.Player
                 @Move.started -= instance.OnMove;
                 @Move.performed -= instance.OnMove;
                 @Move.canceled -= instance.OnMove;
-                @SwordAttack.started -= instance.OnSwordAttack;
-                @SwordAttack.performed -= instance.OnSwordAttack;
-                @SwordAttack.canceled -= instance.OnSwordAttack;
-                @ShieldAtatck.started -= instance.OnShieldAtatck;
-                @ShieldAtatck.performed -= instance.OnShieldAtatck;
-                @ShieldAtatck.canceled -= instance.OnShieldAtatck;
+                @MainAction.started -= instance.OnMainAction;
+                @MainAction.performed -= instance.OnMainAction;
+                @MainAction.canceled -= instance.OnMainAction;
+                @AdditionalAction.started -= instance.OnAdditionalAction;
+                @AdditionalAction.performed -= instance.OnAdditionalAction;
+                @AdditionalAction.canceled -= instance.OnAdditionalAction;
                 @LockTarget.started -= instance.OnLockTarget;
                 @LockTarget.performed -= instance.OnLockTarget;
                 @LockTarget.canceled -= instance.OnLockTarget;
+                @MeleeSet.started -= instance.OnMeleeSet;
+                @MeleeSet.performed -= instance.OnMeleeSet;
+                @MeleeSet.canceled -= instance.OnMeleeSet;
+                @RangeSet.started -= instance.OnRangeSet;
+                @RangeSet.performed -= instance.OnRangeSet;
+                @RangeSet.canceled -= instance.OnRangeSet;
             }
 
             public void RemoveCallbacks(IUnitActions instance)
@@ -384,9 +442,11 @@ namespace RPG.Units.Player
         public interface IUnitActions
         {
             void OnMove(InputAction.CallbackContext context);
-            void OnSwordAttack(InputAction.CallbackContext context);
-            void OnShieldAtatck(InputAction.CallbackContext context);
+            void OnMainAction(InputAction.CallbackContext context);
+            void OnAdditionalAction(InputAction.CallbackContext context);
             void OnLockTarget(InputAction.CallbackContext context);
+            void OnMeleeSet(InputAction.CallbackContext context);
+            void OnRangeSet(InputAction.CallbackContext context);
         }
         public interface ICameraActions
         {

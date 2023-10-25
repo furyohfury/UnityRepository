@@ -9,4 +9,12 @@ namespace RPG
         Friendly = 1,
         Enemy = 2
     }
+    public enum WeaponType : byte
+    {
+        None = 0,
+        SwordAndShield = 1,
+        Bow = 2,
+        TwoHandedSword = 3,
+        Mage = 4
+    }
 }

@@ -9,27 +9,41 @@ namespace RPG.Units.Player
     public class PlayerInputComponent : UnitInputComponent
     {
         private PlayerControls _controls;
-        
 
-        private void Awake()
+        public SimpleHandle MeleeSetEventHandler;
+        public SimpleHandle RangeSetEventHandler;
+        protected override void Awake()
         {
+            base.Awake();
             _controls = new PlayerControls();
-            _controls.Unit.SwordAttack.performed += OnSwordAttack;
+            _controls.Unit.MainAction.performed += OnMainAction;
             _controls.Unit.LockTarget.performed += OnTargetLock;
-            _controls.Unit.ShieldAtatck.performed += OnShieldAttack;
-        }        
-
-        private void OnSwordAttack(InputAction.CallbackContext obj)
-        {
-            CallOnAttackEvent();
+            _controls.Unit.AdditionalAction.performed += OnAdditionalAction;
+            _controls.Unit.MeleeSet.performed += OnMeleeSet;
+            _controls.Unit.MeleeSet.performed += OnRangeSet;
         }
-        private void OnShieldAttack(InputAction.CallbackContext obj)
+
+        private void OnRangeSet(InputAction.CallbackContext obj)
         {
-            CallOnShieldEvent();
+
+        }
+
+        private void OnMeleeSet(InputAction.CallbackContext obj)
+        {
+
+        }
+
+        private void OnMainAction(InputAction.CallbackContext obj)
+        {
+            CallSimpleHandle(nameof(MainEventHandler));
+        }
+        private void OnAdditionalAction(InputAction.CallbackContext obj)
+        {
+            CallSimpleHandle(nameof(AdditionalEventHandler));
         }
         private void OnTargetLock(InputAction.CallbackContext obj)
         {
-            CallOnTargetEvent();
+            CallSimpleHandle(nameof(TargetEventHandler));
         }
 
         private void OnEnable()
@@ -38,8 +52,11 @@ namespace RPG.Units.Player
         }
         private void OnDisable()
         {
-            _controls.Unit.SwordAttack.performed -= OnSwordAttack;
+            _controls.Unit.MainAction.performed -= OnMainAction;
             _controls.Unit.LockTarget.performed -= OnTargetLock;
+            _controls.Unit.AdditionalAction.performed -= OnAdditionalAction;
+            _controls.Unit.MeleeSet.performed -= OnMeleeSet;
+            _controls.Unit.MeleeSet.performed -= OnRangeSet;
             _controls.Disable();
         }        
         void Start()
