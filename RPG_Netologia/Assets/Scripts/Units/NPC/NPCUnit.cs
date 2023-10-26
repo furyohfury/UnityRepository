@@ -5,10 +5,7 @@ namespace RPG.Units.NPC
 {
     public class NPCUnit : Unit
     {
-        protected override void OnRotate()
-        {
-            
-        }
+        // protected override void OnRotate()
 
         protected override void Start()
         {
@@ -19,6 +16,12 @@ namespace RPG.Units.NPC
         protected override void Update()
         {
 
+        }
+        protected override void FindNewTarget()
+        {
+            var player = _unitManager.GetPlayer;
+
+            Target = player;
         }
     }
 }

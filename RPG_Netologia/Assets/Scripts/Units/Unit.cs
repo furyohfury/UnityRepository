@@ -1,25 +1,34 @@
+using RPG.Managers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Zenject;
+
 namespace RPG.Units
 {
     public abstract class Unit : MonoBehaviour
     {
         private bool _inAnimation;
         private Animator _animator;
-        private UnitInputComponent _inputs;
+        protected UnitInputComponent _inputs;
         protected UnitStatsComponent Stats;
+        public UnitStatsComponent GetStats => Stats;
 
-        private TriggerComponent[] _colliders;
+        protected TriggerComponent[] _colliders;
 
         public SimpleHandle OnTargetLostHandler;
 
         [SerializeField]
-        private Transform _targetPoint;
+        protected Transform _targetPoint;
         public Unit Target { get; protected set; }
         public Transform GetTargetPoint => _targetPoint;
 
+
+        [Inject]
+        protected UnitManager _unitManager;
+        [SerializeField, SQRFloat,Tooltip(" вадрат макс рассто€ни€")]
+        protected float _sqrFindTargetDistance = 500f;
         private void OnValidate()
         {
             if (_targetPoint != null) return;
@@ -43,12 +52,13 @@ namespace RPG.Units
         protected virtual void Update()
         {
             OnMove();
-            OnRotate();
+            // OnRotate();
         }
         private void OnDisable()
         {
             BindingEvents(true);
         }
+        protected abstract void FindNewTarget();
         protected void BindingEvents(bool unbind = false)
         {
 #if UNITY_EDITOR
@@ -91,7 +101,7 @@ namespace RPG.Units
             }
         }
 
-        protected abstract void OnRotate();
+        // protected abstract void OnRotate();
         private void OnMainAction()
         {
             if (_inAnimation) return;
@@ -113,7 +123,7 @@ namespace RPG.Units
                 OnTargetLostHandler?.Invoke(); //todo
                 return;
             }
-            var units = FindObjectsOfType<UnitStatsComponent>(); //todo fix (get from list, check distance and walls)
+            /* var units = FindObjectsOfType<UnitStatsComponent>(); //todo fix (get from list, check distance and walls)
 
             var distance = float.MaxValue;
             UnitStatsComponent target = null;
@@ -132,8 +142,10 @@ namespace RPG.Units
             else
             {
                 Debug.Log("Locked on " + target.gameObject.name);
-                Target = target.GetComponent<Unit>();
-            }            
+                Target = target.GetComponent<Unit>(); 
+
+            }*/
+            FindNewTarget();
         }
         private void OnAnimationEnded_UnityEvent(AnimationEvent data)
         {

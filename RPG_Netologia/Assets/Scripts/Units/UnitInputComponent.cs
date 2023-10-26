@@ -25,8 +25,8 @@ namespace RPG.Units
             {
                 _events.Add(it.Name, it);
             }
-            // var strExpr = Expression.Parameter(typeof(string));
-            // var dicExpr = Expression.Constant(_events, typeof(Dictionary<string, FieldInfo>));
+            var strExpr = Expression.Parameter(typeof(string));
+            var dicConstExpr = Expression.Constant(_events, typeof(Dictionary<string, FieldInfo>));
 
             
         }
