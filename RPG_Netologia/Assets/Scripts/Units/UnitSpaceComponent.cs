@@ -33,9 +33,10 @@ namespace RPG.Units
 
             var GO = new GameObject(EditorConstants.AirColliderName);
             GO.transform.parent = transform;
-            GO.transform.position = Vector3.zero;
-            GO.transform.rotation = new Quaternion();
+            GO.transform.localPosition = Vector3.zero;
+            GO.transform.localRotation = new Quaternion();
             GO.transform.localScale = Vector3.one;
+            GO.layer = LayerMask.NameToLayer(EditorConstants.TriggersLayer);
 
             var box = GO.AddComponent<BoxCollider>();
             box.isTrigger = true;

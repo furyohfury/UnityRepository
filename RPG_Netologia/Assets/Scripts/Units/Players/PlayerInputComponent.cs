@@ -11,7 +11,7 @@ namespace RPG.Units.Player
         private PlayerControls _controls;
 
         public SimpleHandle MeleeSetEventHandler;
-        public SimpleHandle RangeSetEventHandler;
+        public SimpleHandle RangeSetEventHandler;        
         protected override void Awake()
         {
             base.Awake();

@@ -12,7 +12,8 @@ namespace RPG
     {
         public static readonly string FocusTargetPointName = "B-neck";
         public static readonly string AirColliderName = "AirCollider";
-        public static Bounds AirColliderBounds = new Bounds(new Vector3(0.5f, 0.037f, 0.5f), new Vector3(0.5f, 0.08f, 0.5f));
+        public static Bounds AirColliderBounds = new Bounds(new Vector3(0f, 0.037f, 0f), new Vector3(0.5f, 0.08f, 0.5f));
+        public static readonly string TriggersLayer = "Triggers";
     }
     [CustomPropertyDrawer(typeof(SQRFloatAttribute))]
     public class SQRFloatDrawer : PropertyDrawer
