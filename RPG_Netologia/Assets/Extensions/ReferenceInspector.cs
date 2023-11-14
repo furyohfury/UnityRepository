@@ -33,17 +33,17 @@ public class ReferenceInspector : EditorWindow
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("Number of MBhs");
         EditorGUILayout.TextField(monoBehaviours.Length.ToString());
-        EditorGUILayout.EndHorizontal();
-        Repaint();
+        EditorGUILayout.EndHorizontal();        
         Draw(monoBehaviours);
-        GetAllFields(monoBehaviours[0]);
+        // GetAllFields(monoBehaviours[0]);
+        Repaint();
 
     }
     private void Draw(MonoBehaviour[] monoBehaviours)
     {
         foreach (var mbh in monoBehaviours)
         {
-
+            GetAllFields(mbh);
         }
     }
     private void GetAllFields(MonoBehaviour monobehaviour)
@@ -54,12 +54,16 @@ public class ReferenceInspector : EditorWindow
         // fields = fields.Where(f => f.IsPublic || f.a).ToArray();
         foreach (var field in fields)
         {
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField($"Field Name: {field.Name} Attributes: {field.Attributes.ToString()} Custom Attributes: {field.FieldType.CustomAttributes}");
-            EditorGUILayout.EndHorizontal();
-            DrawField(field, monobehaviour);
+            var privs = field.GetCustomAttributes(typeof(SerializeField), false);
+            if (field.IsPublic || privs.Length > 0)
+            {
+                EditorGUILayout.BeginHorizontal();
+                DrawField(field, monobehaviour);
+                EditorGUILayout.EndHorizontal();
+            }
+            // EditorGUILayout.LabelField($"Field Name: {field.Name} Attributes: {field.Attributes.ToString()} Custom Attributes: {field.FieldType.GetCustomAttributes(typeof(SerializeField), false)}");                        
         }
-        
+
 
     }
     private void DrawField(FieldInfo field, MonoBehaviour mbh)
@@ -69,10 +73,12 @@ public class ReferenceInspector : EditorWindow
     private void DrawPrimitive(FieldInfo field, MonoBehaviour mbh)
     {
         var t = field.FieldType;
-        if (t == typeof(float))
-        {
-            DrawFloat(field, mbh);
-        }
+        if (t == typeof(float)) DrawFloat(field, mbh);
+        else if (t == typeof(int)) DrawInt(field, mbh);
+    }
+    private void DrawObject(FieldInfo field, MonoBehaviour mbh)
+    {
+
     }
     private void DrawFloat(FieldInfo field, MonoBehaviour mbh)
     {
@@ -80,25 +86,22 @@ public class ReferenceInspector : EditorWindow
         SerializedProperty serProp = serObj.FindProperty(field.Name);
         EditorGUILayout.BeginHorizontal();
         // EditorGUILayout.LabelField(field.Name);        
-        EditorGUILayout.DelayedFloatField(serProp);
+        EditorGUILayout.DelayedFloatField(serProp, new GUIContent(field.Name));
         // EditorGUILayout.DelayedFloatField((float)field.GetValue(new object[] { }));
         // SerializedProperty
         EditorGUILayout.EndHorizontal();
+        serObj.ApplyModifiedProperties();
     }
-    private void DrawVector()
+    private void DrawInt(FieldInfo field, MonoBehaviour mbh)
     {
-
-    }
-    private void DrawColor()
-    {
-
-    }
-    private void DrawBounds()
-    {
-
-    }
-    private void DrawIntBounds()
-    {
-
+        SerializedObject serObj = new(mbh);
+        SerializedProperty serProp = serObj.FindProperty(field.Name);
+        EditorGUILayout.BeginHorizontal();
+        // EditorGUILayout.LabelField(field.Name);        
+        EditorGUILayout.DelayedIntField(serProp);
+        // EditorGUILayout.DelayedFloatField((float)field.GetValue(new object[] { }));
+        // SerializedProperty
+        EditorGUILayout.EndHorizontal();
+        serObj.ApplyModifiedProperties();
     }
 }
