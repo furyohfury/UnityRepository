@@ -5,14 +5,15 @@ using UnityEngine;
 using System.Reflection;
 using System.Linq;
 using System;
+using UnityEditor.ShortcutManagement;
+
 namespace CustomEditor
 {
     public class ReferenceInspector : EditorWindow
     {
         FieldInfo[] _fieldsInfo;
-        // MethodInfo[] _methodsInfo;
         //todo properties
-        [MenuItem("Extensions/Window/References Inspector")]
+        [MenuItem("Extensions/Window/References Inspector"), Shortcut("ReferencesInspector", KeyCode.X, ShortcutModifiers.Shift)]
         public static void ShowCustomEditor()
         {
             var window = GetWindow<ReferenceInspector>(false, "Reference Inspector", true);
@@ -23,20 +24,17 @@ namespace CustomEditor
 
         }
         public void OnGUI()
-        {
-            EditorGUILayout.BeginScrollView();            
+        {           
             GameObject selectedGO = Selection.activeGameObject;
             if (selectedGO == null) return;
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Selected Unit: " + selectedGO.name);
             EditorGUILayout.EndHorizontal();
             MonoBehaviour[] monoBehaviours = selectedGO.GetComponents<MonoBehaviour>();
-            // Debug.Log($"Selected GO has {_monoBehaviours.Length} on it");
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Number of MonoBehaviour components : " + monoBehaviours.Length.ToString());
             EditorGUILayout.EndHorizontal();
             Draw(monoBehaviours);
-            EditorGUILayout.EndScrollView();
             Repaint();
 
         }
@@ -58,7 +56,7 @@ namespace CustomEditor
                 var serializedField = field.GetCustomAttributes(typeof(SerializeField), false);
                 if (field.IsPublic || serializedField.Length > 0)
                 {
-                    DrawField(field, serObj);
+                    DrawField(field, serObj, monobehaviour);
                 }
                 // EditorGUILayout.LabelField($"Field Name: {field.Name} Attributes: {field.Attributes.ToString()} Custom Attributes: {field.FieldType.GetCustomAttributes(typeof(SerializeField), false)}");                        
             }
@@ -74,14 +72,16 @@ namespace CustomEditor
                 else if (type.IsEnum) DrawEnum(field, serObj, mbh);
                 else DrawStruct(field, serObj);                
             }
-            else if (type == typeof(string)) DrawString(field, serObj);
+            else if (type == typeof(string)) DrawString(field.Name, serObj);
             else if (type.IsSubclassOf(typeof(UnityEngine.Object))) DrawUnityObject(field.Name, serObj);
             // else if (type.isArray || type.GetInterfaces().Contains(typeof(IEnumerable))) DrawArrays((IEnumerable)field.GetValue(mbh), field, serObj, mbh);
-            else if (type.isArray || type.GetInterfaces().Contains(typeof(IEnumerable))) DrawUnsupported(type.ToString());
+            else if (type.IsArray || type.GetInterfaces().Contains(typeof(IEnumerable))) DrawUnsupported(type.ToString(), null);
         }
         public void DrawPrimitive(FieldInfo field, SerializedObject serObj)
         {
-            var t = field.FieldType;
+            string t = field.FieldType.ToString();
+            string tString = t[t.IndexOf('.')..].TrimStart('.');
+            tString = string.Concat("Draw", tString[0].ToString().ToUpper(), tString[1..]);
             /* if (t == typeof(float) || t == typeof(int) || t == typeof(long) || t == typeof(bool) || t == typeof(double))
             {
                 string tString = t.ToString();
@@ -97,11 +97,11 @@ namespace CustomEditor
             try
             {
                 // Invoking method of this class
-                this.GetMethod("Draw" + tString).Invoke(this, new Object[field.Name, serObj]);
+                this.GetType().GetMethod(tString).Invoke(null, new object[] { field.Name, serObj });
             }
             catch (Exception e)
             {
-                DrawUnsupported(t.ToString());
+                DrawUnsupported(t.ToString(), e);
             }
         }
         public void DrawStruct(FieldInfo field, SerializedObject serObj)
@@ -113,18 +113,20 @@ namespace CustomEditor
                 // Invoking method of this class
                 this.GetMethod("Draw" + t.ToString()).Invoke(this, new Object[field.Name, serObj]);
             } */
-            var t = field.FieldType;
+            string t = field.FieldType.ToString();
+            string tString = t.Substring(t.IndexOf('.'), t.Length - t.IndexOf('.')).TrimStart('.');
+            tString = string.Concat("Draw", tString);
             try 
-            {
+            {                
                 // Invoking method of this class
-                this.GetMethod("Draw" + t.ToString()).Invoke(this, new Object[field.Name, serObj]);
+                this.GetType().GetMethod(tString).Invoke(null, new System.Object[] { field.Name, serObj });
             }
             catch (Exception e)
             {
-                DrawUnsupported(t.ToString());
+                DrawUnsupported(t.ToString(), e);
             }
         }
-        public void DrawFloat(string fieldName, SerializedObject serObj)
+        public static void DrawSingle(string fieldName, SerializedObject serObj)
         {
             SerializedProperty serProp = serObj.FindProperty(fieldName);
             EditorGUILayout.BeginHorizontal();
@@ -132,7 +134,7 @@ namespace CustomEditor
             EditorGUILayout.EndHorizontal();
             serObj.ApplyModifiedProperties();
         }  
-        public void DrawUnityObject(string fieldName, SerializedObject serObj)
+        public static void DrawUnityObject(string fieldName, SerializedObject serObj)
         {
             SerializedProperty serProp = serObj.FindProperty(fieldName);
             EditorGUILayout.BeginHorizontal();
@@ -140,15 +142,7 @@ namespace CustomEditor
             EditorGUILayout.EndHorizontal();
             serObj.ApplyModifiedProperties();
         }
-        public void DrawFloat(string fieldName, SerializedObject serObj)
-        {
-            SerializedProperty serProp = serObj.FindProperty(fieldName);
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.DelayedFloatField(serProp, new GUIContent(fieldName));
-            EditorGUILayout.EndHorizontal();
-            serObj.ApplyModifiedProperties();
-        }
-        public void DrawInt(string fieldName, SerializedObject serObj)
+        public static void DrawInt32(string fieldName, SerializedObject serObj)
         {
             SerializedProperty serProp = serObj.FindProperty(fieldName);
             EditorGUILayout.BeginHorizontal();
@@ -156,7 +150,7 @@ namespace CustomEditor
             EditorGUILayout.EndHorizontal();
             serObj.ApplyModifiedProperties();
         }
-        public void DrawBool(string fieldName, SerializedObject serObj)
+        public static void DrawBoolean(string fieldName, SerializedObject serObj)
         {
             SerializedProperty serProp = serObj.FindProperty(fieldName);
             EditorGUILayout.BeginHorizontal();
@@ -164,7 +158,7 @@ namespace CustomEditor
             EditorGUILayout.EndHorizontal();
             serObj.ApplyModifiedProperties();
         }
-        public void DrawLong(string fieldName, SerializedObject serObj)
+        public static void DrawInt64(string fieldName, SerializedObject serObj)
         {
             SerializedProperty serProp = serObj.FindProperty(fieldName);
             EditorGUILayout.BeginHorizontal();
@@ -172,7 +166,7 @@ namespace CustomEditor
             EditorGUILayout.EndHorizontal();
             serObj.ApplyModifiedProperties();
         }
-        public void DrawDouble(string fieldName, SerializedObject serObj)
+        public static void DrawDouble(string fieldName, SerializedObject serObj)
         {
             SerializedProperty serProp = serObj.FindProperty(fieldName);
             EditorGUILayout.BeginHorizontal();
@@ -180,7 +174,15 @@ namespace CustomEditor
             EditorGUILayout.EndHorizontal();
             serObj.ApplyModifiedProperties();
         }
-        public void DrawVector2(string fieldName, SerializedObject serObj)
+        public static void DrawString(string fieldName, SerializedObject serObj)
+        {
+            SerializedProperty serProp = serObj.FindProperty(fieldName);
+            EditorGUILayout.BeginHorizontal();
+            serProp.stringValue = EditorGUILayout.DelayedTextField(fieldName, serProp.stringValue);
+            EditorGUILayout.EndHorizontal();
+            serObj.ApplyModifiedProperties();
+        }
+        public static void DrawVector2(string fieldName, SerializedObject serObj)
         {
             SerializedProperty serProp = serObj.FindProperty(fieldName);
             EditorGUILayout.BeginHorizontal();
@@ -188,7 +190,7 @@ namespace CustomEditor
             EditorGUILayout.EndHorizontal();
             serObj.ApplyModifiedProperties();
         }
-        public void DrawVector2Int(string fieldName, SerializedObject serObj)
+        public static void DrawVector2Int(string fieldName, SerializedObject serObj)
         {
             SerializedProperty serProp = serObj.FindProperty(fieldName);
             EditorGUILayout.BeginHorizontal();
@@ -196,7 +198,7 @@ namespace CustomEditor
             EditorGUILayout.EndHorizontal();
             serObj.ApplyModifiedProperties();
         }
-        public void DrawVector3(string fieldName, SerializedObject serObj)
+        public static void DrawVector3(string fieldName, SerializedObject serObj)
         {
             SerializedProperty serProp = serObj.FindProperty(fieldName);
             EditorGUILayout.BeginHorizontal();
@@ -204,7 +206,7 @@ namespace CustomEditor
             EditorGUILayout.EndHorizontal();
             serObj.ApplyModifiedProperties();
         }
-        public void DrawVector3Int(string fieldName, SerializedObject serObj)
+        public static void DrawVector3Int(string fieldName, SerializedObject serObj)
         {
             SerializedProperty serProp = serObj.FindProperty(fieldName);
             EditorGUILayout.BeginHorizontal();
@@ -212,7 +214,7 @@ namespace CustomEditor
             EditorGUILayout.EndHorizontal();
             serObj.ApplyModifiedProperties();
         }
-        public void DrawVector4(string fieldName, SerializedObject serObj)
+        public static void DrawVector4(string fieldName, SerializedObject serObj)
         {
             SerializedProperty serProp = serObj.FindProperty(fieldName);
             EditorGUILayout.BeginHorizontal();
@@ -220,7 +222,7 @@ namespace CustomEditor
             EditorGUILayout.EndHorizontal();
             serObj.ApplyModifiedProperties();
         }
-        public void DrawQuaternion(string fieldName, SerializedObject serObj)
+        public static void DrawQuaternion(string fieldName, SerializedObject serObj)
         {
             SerializedProperty serProp = serObj.FindProperty(fieldName);
             EditorGUILayout.BeginHorizontal();
@@ -229,7 +231,7 @@ namespace CustomEditor
             EditorGUILayout.EndHorizontal();
             serObj.ApplyModifiedProperties();
         }
-        public void DrawColor(string fieldName, SerializedObject serObj)
+        public static void DrawColor(string fieldName, SerializedObject serObj)
         {
             SerializedProperty serProp = serObj.FindProperty(fieldName);
             EditorGUILayout.BeginHorizontal();
@@ -237,7 +239,7 @@ namespace CustomEditor
             EditorGUILayout.EndHorizontal();
             serObj.ApplyModifiedProperties();
         }
-        public void DrawBounds(string fieldName, SerializedObject serObj)
+        public static void DrawBounds(string fieldName, SerializedObject serObj)
         {
             SerializedProperty serProp = serObj.FindProperty(fieldName);
             EditorGUILayout.BeginHorizontal();
@@ -245,7 +247,7 @@ namespace CustomEditor
             EditorGUILayout.EndHorizontal();
             serObj.ApplyModifiedProperties();
         }
-        public void DrawBoundsInt(string fieldName, SerializedObject serObj)
+        public static void DrawBoundsInt(string fieldName, SerializedObject serObj)
         {
             SerializedProperty serProp = serObj.FindProperty(fieldName);
             EditorGUILayout.BeginHorizontal();
@@ -253,30 +255,28 @@ namespace CustomEditor
             EditorGUILayout.EndHorizontal();
             serObj.ApplyModifiedProperties();
         }
-        public void DrawRect(string fieldName, SerializedObject serObj)
+        public static void DrawRect(string fieldName, SerializedObject serObj)
         {
             SerializedProperty serProp = serObj.FindProperty(fieldName);
             EditorGUILayout.BeginHorizontal();
-            serProp.rectValue = EditorGUILayout.RectField(fieldName, serProp.boundsValue);
+            serProp.rectValue = EditorGUILayout.RectField(fieldName, serProp.rectValue);
             EditorGUILayout.EndHorizontal();
             serObj.ApplyModifiedProperties();
         }
-        public void DrawRectInt(string fieldName, SerializedObject serObj)
+        public static void DrawRectInt(string fieldName, SerializedObject serObj)
         {
             SerializedProperty serProp = serObj.FindProperty(fieldName);
             EditorGUILayout.BeginHorizontal();
-            serProp.rectIntValue = EditorGUILayout.RectIntField(fieldName, serProp.boundsIntValue);
+            serProp.rectIntValue = EditorGUILayout.RectIntField(fieldName, serProp.rectIntValue);
             EditorGUILayout.EndHorizontal();
             serObj.ApplyModifiedProperties();
         }
-        public void DrawEnum(FieldInfo field, SerializedObject serObj, MonoBehaviour mbh)
+        public static void DrawEnum(FieldInfo field, SerializedObject serObj, MonoBehaviour mbh)
         {
-            SerializedProperty serProp = serObj.FindProperty(fieldName);
+            SerializedProperty serProp = serObj.FindProperty(field.Name);
             EditorGUILayout.BeginHorizontal();
             var enumValue = field.GetValue(mbh);
             field.SetValue(mbh, EditorGUILayout.EnumPopup(field.Name, (Enum) enumValue));
-            //todo hz
-            // serProp.enumValueFlag = EditorGUILayout.EnumPopup(field.Name, (Enum) field);
             EditorGUILayout.EndHorizontal();
             serObj.ApplyModifiedProperties();
         }
@@ -300,11 +300,12 @@ namespace CustomEditor
                 DrawField(r.GetType().GetField, so, mbh);
             }
         } */
-        public void DrawUnsupported(string type)
+        public static void DrawUnsupported(string type, Exception e)
         {
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField($"Type {type} isn't supported");
             EditorGUILayout.EndHorizontal();
+            if (e != null) EditorGUILayout.HelpBox($"Exception message: {e.ToString()}", MessageType.Error, true);
         }        
     }
 }
