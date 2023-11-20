@@ -10,6 +10,7 @@ namespace CustomEditor
         [SerializeField]
         private int b = 2;
         private float c = 3;
+        public double dd = 2.5;
         public bool d = true;
         [SerializeField]
         protected long l = 20;
@@ -19,6 +20,10 @@ namespace CustomEditor
         public Quaternion qt = new Quaternion(1, 1, 1, 1);
         [SerializeField]
         private Transform transformio;
+        public Color col;
+        public Bounds bound;
+        public RectInt rectint;
+
     }
     public enum TestEnum
     {

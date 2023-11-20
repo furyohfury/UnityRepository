@@ -12,16 +12,11 @@ namespace CustomEditor
     public class ReferenceInspector : EditorWindow
     {
         FieldInfo[] _fieldsInfo;
-        //todo properties
         [MenuItem("Extensions/Window/References Inspector"), Shortcut("ReferencesInspector", KeyCode.X, ShortcutModifiers.Shift)]
         public static void ShowCustomEditor()
         {
             var window = GetWindow<ReferenceInspector>(false, "Reference Inspector", true);
             window.minSize = new Vector2(500f, 500f);
-        }
-        public void OnEnable()
-        {
-
         }
         public void OnGUI()
         {           
@@ -36,7 +31,6 @@ namespace CustomEditor
             EditorGUILayout.EndHorizontal();
             Draw(monoBehaviours);
             Repaint();
-
         }
         public void Draw(MonoBehaviour[] monoBehaviours)
         {
@@ -45,6 +39,7 @@ namespace CustomEditor
                 EditorGUILayout.LabelField($"MBhs name: {mbh.GetType().Name}");
                 SerializedObject serObj = new(mbh);
                 GetAllFields(mbh, serObj);
+                EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
             }
         }
         public void GetAllFields(MonoBehaviour monobehaviour, SerializedObject serObj)
@@ -57,11 +52,8 @@ namespace CustomEditor
                 if (field.IsPublic || serializedField.Length > 0)
                 {
                     DrawField(field, serObj, monobehaviour);
-                }
-                // EditorGUILayout.LabelField($"Field Name: {field.Name} Attributes: {field.Attributes.ToString()} Custom Attributes: {field.FieldType.GetCustomAttributes(typeof(SerializeField), false)}");                        
+                }                       
             }
-
-
         }
         public void DrawField(FieldInfo field, SerializedObject serObj, MonoBehaviour mbh)
         {
@@ -74,7 +66,6 @@ namespace CustomEditor
             }
             else if (type == typeof(string)) DrawString(field.Name, serObj);
             else if (type.IsSubclassOf(typeof(UnityEngine.Object))) DrawUnityObject(field.Name, serObj);
-            // else if (type.isArray || type.GetInterfaces().Contains(typeof(IEnumerable))) DrawArrays((IEnumerable)field.GetValue(mbh), field, serObj, mbh);
             else if (type.IsArray || type.GetInterfaces().Contains(typeof(IEnumerable))) DrawUnsupported(type.ToString(), null);
         }
         public void DrawPrimitive(FieldInfo field, SerializedObject serObj)
@@ -82,18 +73,6 @@ namespace CustomEditor
             string t = field.FieldType.ToString();
             string tString = t[t.IndexOf('.')..].TrimStart('.');
             tString = string.Concat("Draw", tString[0].ToString().ToUpper(), tString[1..]);
-            /* if (t == typeof(float) || t == typeof(int) || t == typeof(long) || t == typeof(bool) || t == typeof(double))
-            {
-                string tString = t.ToString();
-                tString = t[0].ToString().ToUpper() + t.Substring(1);
-                // Invoking method of this class
-                this.GetMethod("Draw" + tString).Invoke(this, new Object[field.Name, serObj]);
-            } */
-            /* if (t == typeof(float)) DrawFloat(field.Name, serObj);
-            else if (t == typeof(int)) DrawInt(field.Name, serObj);
-            else if (t == typeof(bool)) DrawBool(field.Name, serObj);
-            else if (t == typeof(long)) DrawLong(field.Name, serObj);
-            else if (t == typeof(double)) DrawDouble(field.Name, serObj); */
             try
             {
                 // Invoking method of this class
@@ -106,13 +85,6 @@ namespace CustomEditor
         }
         public void DrawStruct(FieldInfo field, SerializedObject serObj)
         {
-            /* var t = field.FieldType;
-            if (t == typeof(Vector2) || t == typeof(Vector2Int) || t == typeof(Vector3) 
-            || t == typeof(Vector3Int) || t == typeof(Vector4) || t == typeof(Quaternion) || t == typeof(Color) || )
-            {
-                // Invoking method of this class
-                this.GetMethod("Draw" + t.ToString()).Invoke(this, new Object[field.Name, serObj]);
-            } */
             string t = field.FieldType.ToString();
             string tString = t.Substring(t.IndexOf('.'), t.Length - t.IndexOf('.')).TrimStart('.');
             tString = string.Concat("Draw", tString);
@@ -273,33 +245,12 @@ namespace CustomEditor
         }
         public static void DrawEnum(FieldInfo field, SerializedObject serObj, MonoBehaviour mbh)
         {
-            SerializedProperty serProp = serObj.FindProperty(field.Name);
             EditorGUILayout.BeginHorizontal();
             var enumValue = field.GetValue(mbh);
             field.SetValue(mbh, EditorGUILayout.EnumPopup(field.Name, (Enum) enumValue));
             EditorGUILayout.EndHorizontal();
             serObj.ApplyModifiedProperties();
         }
-        // 2nd Option
-        /* public void DrawEnum(FieldInfo field, SerializedObject serObj, MonoBehaviour mbh)
-        {
-            SerializedProperty serProp = serObj.FindProperty(fieldName);
-            EditorGUILayout.BeginHorizontal();
-            serProp.enumValueFlag = EditorGUILayout.EnumPopup(field.Name, (Enum) field);
-            EditorGUILayout.EndHorizontal();
-            serObj.ApplyModifiedProperties();
-        } */
-        /* public void DrawArrays(IEnumerable arr, FieldInfo field, SerializedObject serObj, MonoBehaviour mbh)
-        {
-            EditorGUILayout.BeginHorizontal();
-            GUIEditorLayout.LabelField(field.Name);
-            EditorGUILayout.EndHorizontal();
-            SerializedObject so = new(arr);
-            foreach(var r in arr)
-            {
-                DrawField(r.GetType().GetField, so, mbh);
-            }
-        } */
         public static void DrawUnsupported(string type, Exception e)
         {
             EditorGUILayout.BeginHorizontal();
