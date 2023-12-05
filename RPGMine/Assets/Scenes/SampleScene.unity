@@ -656,6 +656,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Uriel A Plotexia
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 78dc858fbe1363541ba08779c9be3a9f, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 78dc858fbe1363541ba08779c9be3a9f, type: 3}
 --- !u!1 &9171099736044061
@@ -1268,6 +1272,7 @@ GameObject:
   - component: {fileID: 919132148938801592}
   - component: {fileID: 919132148938801591}
   - component: {fileID: 919132148938801590}
+  - component: {fileID: 919132148938801593}
   m_Layer: 0
   m_Name: Uriel
   m_TagString: Untagged
@@ -1287,7 +1292,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b14bc48d3b15634399f26067b60e3fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _movespeed: 5
 --- !u!143 &919132148938801591
 CharacterController:
   m_ObjectHideFlags: 0
@@ -1319,6 +1323,24 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 2.5278804, z: 1}
   m_Center: {x: -0, y: 0.76393974, z: 0}
+--- !u!114 &919132148938801593
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919132148938801589}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 677bfa48c0f3f994fa262412c8075eb5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _unitStats:
+    HP: 3
+    MoveSpeed: 5
+    Damage: 3
+    LightAttackDamage: 3
+    HeavyAttackDamage: 3
 --- !u!4 &1031632035093160274
 Transform:
   m_ObjectHideFlags: 0

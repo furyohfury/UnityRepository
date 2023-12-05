@@ -8,65 +8,40 @@ namespace RPGMine
 {
     public class PlayerInput : MonoBehaviour
     {
-        public PlayerControls _playerInput;
-        private CharacterController _charController;
-        private Animator _playerAnimator;
-        [SerializeField, Range(0, 10)]
-        private float _movespeed;
-        public float MoveSpeed
-        {
-            get
-            {
-                return _movespeed;
-            }
-            set
-            {
-                if (value > 0) _movespeed = value;
-                else Debug.LogWarning("Movespeed < 0");
-            }
-        }
+        public PlayerControls _playerControls;
+
         private void Awake()
         {
-            _charController = GetComponent<CharacterController>();
-            _playerAnimator = GetComponent<Animator>();
-            _playerInput = new();
+            _playerControls = new();
         }
         private void OnEnable()
         {
-            _playerInput.Enable();
-            _playerInput.PlayerMap.LightAttack.performed += OnLightAttack;
-            _playerInput.PlayerMap.Interact.performed += OnInteract;
+            _playerControls.Enable();
+            _playerControls.PlayerMap.LightAttack.performed += ReadLightAttack;
+            _playerControls.PlayerMap.Interact.performed += OnInteract;
         }
         private void OnDisable()
         {
-            _playerInput.PlayerMap.LightAttack.performed -= OnLightAttack;
-            _playerInput.PlayerMap.Interact.performed -= OnInteract;
-            _playerInput.Disable();
+            _playerControls.PlayerMap.LightAttack.performed -= ReadLightAttack;
+            _playerControls.PlayerMap.Interact.performed -= OnInteract;
+            _playerControls.Disable();
         }
         private void OnDestroy()
         {
-            _playerInput.Dispose();
+            _playerControls.Dispose();
         }
-        private void OnLightAttack(CallbackContext context)
+        private void ReadLightAttack(CallbackContext context)
         {
-            _playerAnimator.SetTrigger("LightAttack");
+            OnLightAttack?.Invoke();
         }
         private void OnInteract(CallbackContext context)
         {
 
         }
-        private void FixedUpdate()
+        public Vector2 ReadMovement()
         {
-            var movement = _playerInput.PlayerMap.Movement.ReadValue<Vector2>();
-            if (movement == Vector2.zero)
-            {
-                _playerAnimator.SetBool("Moving", false);
-                return;
-            }
-            _charController.SimpleMove(new Vector3(movement.x, 0, movement.y) * MoveSpeed);
-            _playerAnimator.SetBool("Moving", true);
-            _playerAnimator.SetFloat("ForwardMove", movement.y);
-            _playerAnimator.SetFloat("SideMove", movement.x);
+            return _playerControls.PlayerMap.Movement.ReadValue<Vector2>();
         }
+        public event SimpleDelegate OnLightAttack;
     }
 }
