@@ -2,6 +2,7 @@ public struct UnitStats
 {
     public int HP;
     public float MoveSpeed;
+    public uint Damage;
     public uint LightAttackDamage;
     public uint HeavyAttackDamage;
      
