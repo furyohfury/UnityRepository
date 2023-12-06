@@ -33,13 +33,8 @@ namespace RPGMine
         }
         protected override void Dead()
         {
-            base.Dead();
-            StartCoroutine(PlayerDead());
-        }
-        private IEnumerator PlayerDead()
-        {
             _playerInput.enabled = false;
-            //todo 
+            base.Dead();
+            //todo interface appearance save/load
         }
-    }
 }

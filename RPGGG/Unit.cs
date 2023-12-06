@@ -34,7 +34,10 @@ namespace RPGMine
         {
             Move();
         }        
-        
+        protected virtual void OnCollisionEnter(Collision other)
+        {
+            if (other.transform.root.TryGetComponent(out Unit enemy)) GotHit(enemy);
+        }
         protected void Move()
         {            
             Vector2 movement = GetMovement();
@@ -56,25 +59,20 @@ namespace RPGMine
         }
         protected virtual void GotHit(Unit enemy)
         {
-            StartCoroutine(GotHitCycle());
-            _unitAnimator.SetTrigger("Hit"); //todo add animation
-            _unitStats.HP -= _unitStats.Damage;
+            _unitAnimator.SetTrigger("Hit"); //todo add animation and add triggers to stop/allow moevemnt there
+            _unitStats.HP -= enemy.GetUnitStats().Damage;
             if (_unitStats.HP <= 0) Dead();
-        }
-        protected IEnumerator GotHitCycle()
-        {
-            CanMove = false;
-            yield new WaitForSeconds(0.5f);
-            CanMove = true;
         }
         protected virtual void Dead()
         {
             _unitAnimator.SetTrigger("Death");
-            //todo deaths for player and npcs
-        }
-        protected virtual void OnCollisionEnter(Collision other)
+            // goes to DestroyUnit_AnimatorEvent
+            //todo different deaths for player and npcs
+        }        
+        protected virtual void EquipWeapon(Weapon Weapon)
         {
-            if (other.transform.root.TryGetComponent(out Unit enemy)) GotHit(enemy);
+            _unitStats.LightAttackDamage = weapon._weaponLightAttackDamage;
+            _unitStats.HeavyAttackDamage = weapon._weaponHeavyAttackDamage;
         }
         protected virtual void AllowMovement_AnimatorEvent()
         {
@@ -83,6 +81,11 @@ namespace RPGMine
         protected virtual void StopMovement_AnimatorEvent()
         {
             CanMove = false;
+        }
+        protected virtual void DestroyUnit_AnimatorEvent()
+        {
+            gameObject.enabled = false;
+            Destroy(gameObject);
         }
         
         protected abstract Vector2 GetMovement();
